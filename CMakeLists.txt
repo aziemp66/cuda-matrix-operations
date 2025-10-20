@@ -30,7 +30,14 @@ set(CMAKE_CUDA_ARCHITECTURES 75 80)
 # files and the CUDA compiler (nvcc) for.cu files.
 add_executable(
     matrix_ops
-    src/main.cu
+    main.cpp
+    src/example/vector_add_example.cu
+    src/example/matrix_add_example.cu
+    src/example/matrix_mult_naive_example.cu
+    src/cpu/vector_add_cpu.cpp
+    src/cpu/matrix_add_cpu.cpp
+    src/cpu/matrix_mult_cpu.cpp
+    src/kernels/vector_add.cu
     src/kernels/matrix_add.cu
     src/kernels/matrix_mult_naive.cu
     src/kernels/matrix_mult_tiled.cu

@@ -7,8 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 
-// CPU wrapper for float naive matmul
-void RunMatrixMultNaiveCPUFloat(const float *h_A, const float *h_B, float *h_C,
+// CPU wrapper for float tiled matmul
+void RunMatrixMultTiledCPUFloat(const float *h_A, const float *h_B, float *h_C,
                                 int M, int N, int K) {
   clock_t start_cpu = clock();
   matrixMultCPU(h_A, h_B, h_C, M, N, K);
@@ -18,8 +18,8 @@ void RunMatrixMultNaiveCPUFloat(const float *h_A, const float *h_B, float *h_C,
   printf("CPU execution time (float): %f ms\n", cpu_duration_ms);
 }
 
-// GPU wrapper for float naive matmul
-void RunMatrixMultNaiveGPUFloat(const float *h_A, const float *h_B, float *h_C,
+// GPU wrapper for float tiled matmul
+void RunMatrixMultTiledGPUFloat(const float *h_A, const float *h_B, float *h_C,
                                 int M, int N, int K) {
   const int numElementsA = M * K;
   const int numElementsB = K * N;
@@ -45,7 +45,7 @@ void RunMatrixMultNaiveGPUFloat(const float *h_A, const float *h_B, float *h_C,
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
-  matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
+  matrixMultTiled<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess)
     printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
@@ -63,8 +63,8 @@ void RunMatrixMultNaiveGPUFloat(const float *h_A, const float *h_B, float *h_C,
   cudaFree(d_C);
 }
 
-// CPU wrapper for double naive matmul
-void RunMatrixMultNaiveCPUDouble(const double *h_A, const double *h_B,
+// CPU wrapper for double tiled matmul
+void RunMatrixMultTiledCPUDouble(const double *h_A, const double *h_B,
                                  double *h_C, int M, int N, int K) {
   clock_t start_cpu = clock();
   matrixMultCPU(h_A, h_B, h_C, M, N, K);
@@ -74,8 +74,8 @@ void RunMatrixMultNaiveCPUDouble(const double *h_A, const double *h_B,
   printf("CPU execution time (double): %f ms\n", cpu_duration_ms);
 }
 
-// GPU wrapper for double naive matmul
-void RunMatrixMultNaiveGPUDouble(const double *h_A, const double *h_B,
+// GPU wrapper for double tiled matmul
+void RunMatrixMultTiledGPUDouble(const double *h_A, const double *h_B,
                                  double *h_C, int M, int N, int K) {
   const int numElementsA = M * K;
   const int numElementsB = K * N;
@@ -101,7 +101,7 @@ void RunMatrixMultNaiveGPUDouble(const double *h_A, const double *h_B,
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
-  matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
+  matrixMultTiled<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess)
     printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
@@ -120,8 +120,8 @@ void RunMatrixMultNaiveGPUDouble(const double *h_A, const double *h_B,
 }
 
 // Example functions use the separated wrappers
-void MatrixMultNaiveExampleFloat() {
-  printf("\nInitiating Matrix Naive Multiplication (Float Precision)\n");
+void MatrixMultTiledExampleFloat() {
+  printf("\nInitiating Matrix Tiled Multiplication (Float Precision)\n");
   const int M = 1 << 10;
   const int N = 1 << 10;
   const int K = 1 << 10;
@@ -141,8 +141,8 @@ void MatrixMultNaiveExampleFloat() {
     h_B[i] = static_cast<float>(rand()) / RAND_MAX;
   }
 
-  RunMatrixMultNaiveCPUFloat(h_A, h_B, h_C_Cpu, M, N, K);
-  RunMatrixMultNaiveGPUFloat(h_A, h_B, h_C_Gpu, M, N, K);
+  RunMatrixMultTiledCPUFloat(h_A, h_B, h_C_Cpu, M, N, K);
+  RunMatrixMultTiledGPUFloat(h_A, h_B, h_C_Gpu, M, N, K);
 
   float diff = 0.0f;
   for (int i = 0; i < numElementsC; ++i) {
@@ -156,8 +156,8 @@ void MatrixMultNaiveExampleFloat() {
   delete[] h_C_Gpu;
 }
 
-void MatrixMultNaiveExampleDouble() {
-  printf("\nInitiating Matrix Naive Multiplication (Double Precision)\n");
+void MatrixMultTiledExampleDouble() {
+  printf("\nInitiating Matrix Tiled Multiplication (Double Precision)\n");
   const int M = 1 << 10;
   const int N = 1 << 10;
   const int K = 1 << 10;
@@ -177,8 +177,8 @@ void MatrixMultNaiveExampleDouble() {
     h_B[i] = static_cast<double>(rand()) / RAND_MAX;
   }
 
-  RunMatrixMultNaiveCPUDouble(h_A, h_B, h_C_Cpu, M, N, K);
-  RunMatrixMultNaiveGPUDouble(h_A, h_B, h_C_Gpu, M, N, K);
+  RunMatrixMultTiledCPUDouble(h_A, h_B, h_C_Cpu, M, N, K);
+  RunMatrixMultTiledGPUDouble(h_A, h_B, h_C_Gpu, M, N, K);
 
   double diff = 0.0;
   for (int i = 0; i < numElementsC; ++i) {

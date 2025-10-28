@@ -2,16 +2,115 @@
 #include "example.h"
 #include "kernels.h"
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
-void MatrixAddExampleFloat() {
-  printf("\nInitiating Matrix Addition (Float Precision)\n");
-  const int M = 1 << 13;
-  const int N = 1 << 13;
+// CPU wrapper for float
+void RunMatrixAddCPUFloat(const float *h_A, const float *h_B, float *h_C, int M,
+                          int N) {
+  clock_t start_cpu = clock();
+  matrixAddCPU(h_A, h_B, h_C, M, N);
+  clock_t end_cpu = clock();
+  float cpu_duration_ms =
+      1000.0f * (float)(end_cpu - start_cpu) / CLOCKS_PER_SEC;
+  printf("CPU execution time (float): %f ms\n", cpu_duration_ms);
+}
+
+// GPU wrapper for float
+void RunMatrixAddGPUFloat(const float *h_A, const float *h_B, float *h_C, int M,
+                          int N) {
   const int numElements = M * N;
   const size_t size = numElements * sizeof(float);
+
+  float *d_A = nullptr, *d_B = nullptr, *d_C = nullptr;
+  dim3 threadsPerBlock(16, 16);
+  dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                     (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+  clock_t start_gpu = clock();
+
+  cudaMalloc((void **)&d_A, size);
+  cudaMalloc((void **)&d_B, size);
+  cudaMalloc((void **)&d_C, size);
+
+  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
+
+  matrixAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess)
+    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+  cudaDeviceSynchronize();
+
+  cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
+
+  clock_t end_gpu = clock();
+  float gpu_duration_ms =
+      1000.0f * (float)(end_gpu - start_gpu) / CLOCKS_PER_SEC;
+  printf("GPU execution time (float): %f ms\n", gpu_duration_ms);
+
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
+}
+
+// CPU wrapper for double
+void RunMatrixAddCPUDouble(const double *h_A, const double *h_B, double *h_C,
+                           int M, int N) {
+  clock_t start_cpu = clock();
+  matrixAddCPU(h_A, h_B, h_C, M, N);
+  clock_t end_cpu = clock();
+  float cpu_duration_ms =
+      1000.0f * (float)(end_cpu - start_cpu) / CLOCKS_PER_SEC;
+  printf("CPU execution time (double): %f ms\n", cpu_duration_ms);
+}
+
+// GPU wrapper for double
+void RunMatrixAddGPUDouble(const double *h_A, const double *h_B, double *h_C,
+                           int M, int N) {
+  const int numElements = M * N;
+  const size_t size = numElements * sizeof(double);
+
+  double *d_A = nullptr, *d_B = nullptr, *d_C = nullptr;
+  dim3 threadsPerBlock(16, 16);
+  dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                     (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+  clock_t start_gpu = clock();
+
+  cudaMalloc((void **)&d_A, size);
+  cudaMalloc((void **)&d_B, size);
+  cudaMalloc((void **)&d_C, size);
+
+  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
+
+  matrixAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N);
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess)
+    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+  cudaDeviceSynchronize();
+
+  cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
+
+  clock_t end_gpu = clock();
+  float gpu_duration_ms =
+      1000.0f * (float)(end_gpu - start_gpu) / CLOCKS_PER_SEC;
+  printf("GPU execution time (double): %f ms\n", gpu_duration_ms);
+
+  cudaFree(d_A);
+  cudaFree(d_B);
+  cudaFree(d_C);
+}
+
+// Example functions use the separated wrappers
+void MatrixAddExampleFloat() {
+  printf("\nInitiating Matrix Addition (Float Precision)\n");
+  const int M = 1 << 15;
+  const int N = 1 << 15;
+  const int numElements = M * N;
 
   float *h_A = new float[numElements];
   float *h_B = new float[numElements];
@@ -23,59 +122,26 @@ void MatrixAddExampleFloat() {
     h_B[i] = static_cast<float>(rand()) / RAND_MAX;
   }
 
-  clock_t start_cpu = clock();
-  matrixAddCPU(h_A, h_B, h_C_Cpu, M, N);
-  clock_t end_cpu = clock();
-  float cpu_duration_ms =
-      1000.0 * (float)(end_cpu - start_cpu) / CLOCKS_PER_SEC;
-  printf("CPU execution time: %f ms\n", cpu_duration_ms);
+  RunMatrixAddCPUFloat(h_A, h_B, h_C_Cpu, M, N);
+  RunMatrixAddGPUFloat(h_A, h_B, h_C_Gpu, M, N);
 
-  float *d_A, *d_B, *d_C;
-  dim3 threadsPerBlock(16, 16);
-  dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                     (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
-  clock_t start_gpu = clock();
-  cudaMalloc((void **)&d_A, size);
-  cudaMalloc((void **)&d_B, size);
-  cudaMalloc((void **)&d_C, size);
-
-  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
-
-  matrixAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N);
-
-  cudaDeviceSynchronize();
-
-  cudaMemcpy(h_C_Gpu, d_C, size, cudaMemcpyDeviceToHost);
-  clock_t end_gpu = clock();
-  float gpu_duration_ms =
-      1000.0 * (float)(end_gpu - start_gpu) / CLOCKS_PER_SEC;
-  printf("GPU execution time: %f ms\n", gpu_duration_ms);
-
-  cudaFree(d_A);
-  cudaFree(d_B);
-  cudaFree(d_C);
-  delete[] h_A;
-  delete[] h_B;
-
-  float diff = 0.0f;
+  double diff = 0.0;
   for (int i = 0; i < numElements; ++i) {
-    diff += fabs(h_C_Cpu[i] - h_C_Gpu[i]);
+    diff += std::fabs((double)h_C_Cpu[i] - (double)h_C_Gpu[i]);
   }
   printf("Total difference between CPU and GPU results: %f\n", diff);
 
+  delete[] h_A;
+  delete[] h_B;
   delete[] h_C_Cpu;
   delete[] h_C_Gpu;
 }
 
 void MatrixAddExampleDouble() {
   printf("\nInitiating Matrix Addition (Double Precision)\n");
-
-  const int M = 1 << 12;
-  const int N = 1 << 12;
+  const int M = 1 << 15;
+  const int N = 1 << 15;
   const int numElements = M * N;
-  const size_t size = numElements * sizeof(double);
 
   double *h_A = new double[numElements];
   double *h_B = new double[numElements];
@@ -87,49 +153,17 @@ void MatrixAddExampleDouble() {
     h_B[i] = static_cast<double>(rand()) / RAND_MAX;
   }
 
-  clock_t start_cpu = clock();
-  matrixAddCPU(h_A, h_B, h_C_Cpu, M, N);
-  clock_t end_cpu = clock();
+  RunMatrixAddCPUDouble(h_A, h_B, h_C_Cpu, M, N);
+  RunMatrixAddGPUDouble(h_A, h_B, h_C_Gpu, M, N);
 
-  float cpu_duration_ms =
-      1000.0 * (float)(end_cpu - start_cpu) / CLOCKS_PER_SEC;
-  printf("CPU execution time: %f ms\n", cpu_duration_ms);
-
-  double *d_A, *d_B, *d_C;
-  dim3 threadsPerBlock(16, 16);
-  dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                     (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
-  clock_t start_gpu = clock();
-  cudaMalloc((void **)&d_A, size);
-  cudaMalloc((void **)&d_B, size);
-  cudaMalloc((void **)&d_C, size);
-
-  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
-
-  matrixAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N);
-
-  cudaDeviceSynchronize();
-
-  cudaMemcpy(h_C_Gpu, d_C, size, cudaMemcpyDeviceToHost);
-  clock_t end_gpu = clock();
-  float gpu_duration_ms =
-      1000.0 * (float)(end_gpu - start_gpu) / CLOCKS_PER_SEC;
-  printf("GPU execution time: %f ms\n", gpu_duration_ms);
-
-  cudaFree(d_A);
-  cudaFree(d_B);
-  cudaFree(d_C);
-  delete[] h_A;
-  delete[] h_B;
-
-  double diff = 0.0f;
+  double diff = 0.0;
   for (int i = 0; i < numElements; ++i) {
-    diff += fabs(h_C_Cpu[i] - h_C_Gpu[i]);
+    diff += std::fabs(h_C_Cpu[i] - h_C_Gpu[i]);
   }
   printf("Total difference between CPU and GPU results: %f\n", diff);
 
+  delete[] h_A;
+  delete[] h_B;
   delete[] h_C_Cpu;
   delete[] h_C_Gpu;
 }

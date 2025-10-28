@@ -34,6 +34,7 @@ add_executable(
     src/example/vector_add_example.cu
     src/example/matrix_add_example.cu
     src/example/matrix_mult_naive_example.cu
+    src/example/matrix_mult_tiled_example.cu
     src/cpu/vector_add_cpu.cpp
     src/cpu/matrix_add_cpu.cpp
     src/cpu/matrix_mult_cpu.cpp

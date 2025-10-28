@@ -9,13 +9,13 @@ void VectorAddExampleDouble();
 
 void MatrixAddExampleFloat();
 
-void MatrixMultNaiveExampleFloat();
-
-void MatrixMultTiledExampleFloat();
-
 void MatrixAddExampleDouble();
 
+void MatrixMultNaiveExampleFloat();
+
 void MatrixMultNaiveExampleDouble();
+
+void MatrixMultTiledExampleFloat();
 
 void MatrixMultTiledExampleDouble();
 

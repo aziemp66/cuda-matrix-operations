@@ -1,5 +1,5 @@
-// File: src/main.cpp
 #include "example.h"
+#include "header/example.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -11,21 +11,20 @@ int main() {
   srand(time(0));
 
   VectorAddExampleFloat();
-  sleep(15);
 
   VectorAddExampleDouble();
-  sleep(15);
 
-  MatrixAddExampleFloat();
-  sleep(15);
+  // MatrixAddExampleFloat();
 
-  MatrixAddExampleDouble();
-  sleep(15);
+  // MatrixAddExampleDouble();
 
   MatrixMultNaiveExampleFloat();
-  sleep(15);
 
   MatrixMultNaiveExampleDouble();
+
+  MatrixMultTiledExampleFloat();
+
+  MatrixMultTiledExampleDouble();
 
   return 0;
 }

@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "example.h"
 #include "kernels.h"
+#include "logger.h"
 
 #include <cmath>
 #include <cstdio>
@@ -32,6 +33,8 @@ float MatrixMultNaiveExampleCPUFloat(int TPB, int n) {
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
   delete[] h_B;
@@ -87,6 +90,8 @@ float MatrixMultNaiveExampleGPUFloat(int TPB, int n) {
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -123,6 +128,8 @@ float MatrixMultNaiveExampleCPUDouble(int TPB, int n) {
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
   delete[] h_B;
@@ -178,6 +185,8 @@ float MatrixMultNaiveExampleGPUDouble(int TPB, int n) {
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);
   cudaFree(d_B);

@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "example.h"
 #include "kernels.h"
+#include "logger.h"
 
 #include <cmath>
 #include <cstdio>
@@ -24,6 +25,8 @@ float VectorAddExampleCPUFloat(int TPB, int n) {
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
+  
+  logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
 
   delete[] h_A;
   delete[] h_B;
@@ -68,6 +71,8 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
+  
+  logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -96,6 +101,8 @@ float VectorAddExampleCPUDouble(int TPB, int n) {
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
+  
+  logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
 
   delete[] h_A;
   delete[] h_B;
@@ -140,6 +147,8 @@ float VectorAddExampleGPUDouble(int TPB, int n) {
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
+  
+  logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
 
   cudaFree(d_A);
   cudaFree(d_B);

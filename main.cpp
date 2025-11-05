@@ -1,5 +1,6 @@
 #include "example.h"
 #include "header/example.h"
+#include "header/logger.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -41,6 +42,9 @@ int main(int argc, char *argv[]) {
 
   printf("Using TPB=%d, size=%d\n\n", TPB, n);
 
+  // Initialize logger
+  initLogger("results/results.csv");
+
   float timeCPU = MatrixMultNaiveExampleCPUFloat(TPB, n);
 
   float timeGPU = MatrixMultNaiveExampleGPUFloat(TPB, n);
@@ -54,6 +58,9 @@ int main(int argc, char *argv[]) {
 
   // printf("Winner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
   // printf("\ndifference: %f\n", timeCPU - timeGPU);
+
+  // Close logger
+  closeLogger();
 
   return 0;
 }

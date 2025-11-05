@@ -21,6 +21,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 20)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
+# Export compile commands for LSP (Language Server Protocol) support
+# This generates compile_commands.json that tools like clangd, ccls, etc. can use
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Specify the target GPU architectures to generate native SASS code.
 # This avoids runtime JIT compilation and improves performance.
 # '75' for Turing, '80' for Ampere. Add or remove based on your GPU.
@@ -42,6 +46,7 @@ add_executable(
     src/kernels/matrix_add.cu
     src/kernels/matrix_mult_naive.cu
     src/kernels/matrix_mult_tiled.cu
+    src/logger/logger.cpp
 )
 
 # Modern CMake creates imported targets for CUDA libraries.

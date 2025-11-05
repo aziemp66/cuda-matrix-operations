@@ -9,17 +9,7 @@ static bool loggerInitialized = false;
 
 const char* EXPECTED_HEADER = "task_type,platform,threads_per_block,size,duration_ms";
 
-// Check if file exists
-static bool fileExists(const char* filename) {
-  FILE* testFile = fopen(filename, "r");
-  if (testFile != nullptr) {
-    fclose(testFile);
-    return true;
-  }
-  return false;
-}
-
-// Validate CSV header if file exists
+// Validate CSV header if file exists (optimized - single file open)
 static bool validateHeader(const char* filename) {
   FILE* testFile = fopen(filename, "r");
   if (testFile == nullptr) {
@@ -28,29 +18,32 @@ static bool validateHeader(const char* filename) {
   }
   
   char header[256];
+  bool isEmpty = false;
   if (fgets(header, sizeof(header), testFile) == nullptr) {
     // Empty file, treat as new file
-    fclose(testFile);
-    return true;
+    isEmpty = true;
+  }
+  
+  // Don't close yet - we'll reuse the file handle if valid
+  if (!isEmpty) {
+    // Remove newline if present
+    size_t len = strlen(header);
+    if (len > 0 && header[len - 1] == '\n') {
+      header[len - 1] = '\0';
+    }
+    
+    // Compare with expected header
+    if (strcmp(header, EXPECTED_HEADER) != 0) {
+      fclose(testFile);
+      printf("Error: CSV file '%s' has invalid header format.\n", filename);
+      printf("  Expected: %s\n", EXPECTED_HEADER);
+      printf("  Found:    %s\n", header);
+      printf("  Please fix the file or use a different path.\n");
+      return false;
+    }
   }
   
   fclose(testFile);
-  
-  // Remove newline if present
-  size_t len = strlen(header);
-  if (len > 0 && header[len - 1] == '\n') {
-    header[len - 1] = '\0';
-  }
-  
-  // Compare with expected header
-  if (strcmp(header, EXPECTED_HEADER) != 0) {
-    printf("Error: CSV file '%s' has invalid header format.\n", filename);
-    printf("  Expected: %s\n", EXPECTED_HEADER);
-    printf("  Found:    %s\n", header);
-    printf("  Please fix the file or use a different path.\n");
-    return false;
-  }
-  
   return true;
 }
 
@@ -59,11 +52,9 @@ bool initLogger(const char* filename) {
     closeLogger();
   }
   
-  // Validate existing file if it exists
-  if (fileExists(filename)) {
-    if (!validateHeader(filename)) {
-      return false;
-    }
+  // Validate existing file if it exists (this also checks if file exists)
+  if (!validateHeader(filename)) {
+    return false;
   }
   
   // Open in append mode (creates file if it doesn't exist)

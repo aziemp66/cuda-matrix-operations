@@ -7,8 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 
-float VectorAddExampleCPUFloat() {
-  const int N = 1 << 25;
+float VectorAddExampleCPUFloat(int TPB, int n) {
+  const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
   float *h_C = new float[N];
@@ -23,7 +23,7 @@ float VectorAddExampleCPUFloat() {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Float Time: %f ms\n", duration);
+  printf("CPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   delete[] h_A;
   delete[] h_B;
@@ -31,8 +31,8 @@ float VectorAddExampleCPUFloat() {
   return duration;
 }
 
-float VectorAddExampleGPUFloat() {
-  const int N = 1 << 25;
+float VectorAddExampleGPUFloat(int TPB, int n) {
+  const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
   float *h_C = new float[N];
@@ -54,7 +54,7 @@ float VectorAddExampleGPUFloat() {
   cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
 
-  dim3 threadsPerBlock(256);
+  dim3 threadsPerBlock(TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
   vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, N);
@@ -67,7 +67,7 @@ float VectorAddExampleGPUFloat() {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Float Time: %f ms\n", duration);
+  printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -79,8 +79,8 @@ float VectorAddExampleGPUFloat() {
   return duration;
 }
 
-float VectorAddExampleCPUDouble() {
-  const int N = 1 << 25;
+float VectorAddExampleCPUDouble(int TPB, int n) {
+  const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
   double *h_C = new double[N];
@@ -95,7 +95,7 @@ float VectorAddExampleCPUDouble() {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Double Time: %f ms\n", duration);
+  printf("CPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   delete[] h_A;
   delete[] h_B;
@@ -103,8 +103,8 @@ float VectorAddExampleCPUDouble() {
   return duration;
 }
 
-float VectorAddExampleGPUDouble() {
-  const int N = 1 << 25;
+float VectorAddExampleGPUDouble(int TPB, int n) {
+  const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
   double *h_C = new double[N];
@@ -126,7 +126,7 @@ float VectorAddExampleGPUDouble() {
   cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
 
-  dim3 threadsPerBlock(256);
+  dim3 threadsPerBlock(TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
   vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, N);
@@ -139,7 +139,7 @@ float VectorAddExampleGPUDouble() {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Double Time: %f ms\n", duration);
+  printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   cudaFree(d_A);
   cudaFree(d_B);

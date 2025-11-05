@@ -7,10 +7,10 @@
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultTiledExampleCPUFloat() {
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+float MatrixMultTiledExampleCPUFloat(int TPB, int n) {
+  const int M = n;
+  const int N = n;
+  const int K = n;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -31,7 +31,7 @@ float MatrixMultTiledExampleCPUFloat() {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Tiled Float Time: %f ms\n", duration);
+  printf("CPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   delete[] h_A;
   delete[] h_B;
@@ -39,10 +39,10 @@ float MatrixMultTiledExampleCPUFloat() {
   return duration;
 }
 
-float MatrixMultTiledExampleGPUFloat() {
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+float MatrixMultTiledExampleGPUFloat(int TPB, int n) {
+  const int M = n;
+  const int N = n;
+  const int K = n;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -72,7 +72,7 @@ float MatrixMultTiledExampleGPUFloat() {
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
-  dim3 threadsPerBlock(16, 16);
+  dim3 threadsPerBlock(TPB, TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -86,7 +86,7 @@ float MatrixMultTiledExampleGPUFloat() {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Tiled Float Time: %f ms\n", duration);
+  printf("GPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -98,10 +98,10 @@ float MatrixMultTiledExampleGPUFloat() {
   return duration;
 }
 
-float MatrixMultTiledExampleCPUDouble() {
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+float MatrixMultTiledExampleCPUDouble(int TPB, int n) {
+  const int M = n;
+  const int N = n;
+  const int K = n;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -122,7 +122,7 @@ float MatrixMultTiledExampleCPUDouble() {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Tiled Double Time: %f ms\n", duration);
+  printf("CPU Matrix Mult Tiled Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   delete[] h_A;
   delete[] h_B;
@@ -130,10 +130,10 @@ float MatrixMultTiledExampleCPUDouble() {
   return duration;
 }
 
-float MatrixMultTiledExampleGPUDouble() {
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+float MatrixMultTiledExampleGPUDouble(int TPB, int n) {
+  const int M = n;
+  const int N = n;
+  const int K = n;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -163,7 +163,7 @@ float MatrixMultTiledExampleGPUDouble() {
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
-  dim3 threadsPerBlock(16, 16);
+  dim3 threadsPerBlock(TPB, TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -177,7 +177,7 @@ float MatrixMultTiledExampleGPUDouble() {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Tiled Double Time: %f ms\n", duration);
+  printf("GPU Matrix Mult Tiled Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   cudaFree(d_A);
   cudaFree(d_B);

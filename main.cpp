@@ -10,9 +10,9 @@ using namespace std;
 int main() {
   srand(time(0));
 
-  VectorAddExampleFloat();
+  // VectorAddExampleFloat();
 
-  VectorAddExampleDouble();
+  // VectorAddExampleDouble();
 
   // MatrixAddExampleFloat();
 
@@ -20,11 +20,11 @@ int main() {
 
   MatrixMultNaiveExampleFloat();
 
-  MatrixMultNaiveExampleDouble();
+  // MatrixMultNaiveExampleDouble();
 
   MatrixMultTiledExampleFloat();
 
-  MatrixMultTiledExampleDouble();
+  // MatrixMultTiledExampleDouble();
 
   return 0;
 }

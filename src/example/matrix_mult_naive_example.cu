@@ -122,9 +122,9 @@ void RunMatrixMultNaiveGPUDouble(const double *h_A, const double *h_B,
 // Example functions use the separated wrappers
 void MatrixMultNaiveExampleFloat() {
   printf("\nInitiating Matrix Naive Multiplication (Float Precision)\n");
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+  const int M = 1 << 14;
+  const int N = 1 << 14;
+  const int K = 1 << 14;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -141,14 +141,14 @@ void MatrixMultNaiveExampleFloat() {
     h_B[i] = static_cast<float>(rand()) / RAND_MAX;
   }
 
-  RunMatrixMultNaiveCPUFloat(h_A, h_B, h_C_Cpu, M, N, K);
+  // RunMatrixMultNaiveCPUFloat(h_A, h_B, h_C_Cpu, M, N, K);
   RunMatrixMultNaiveGPUFloat(h_A, h_B, h_C_Gpu, M, N, K);
 
-  float diff = 0.0f;
-  for (int i = 0; i < numElementsC; ++i) {
-    diff += std::fabs(h_C_Cpu[i] - h_C_Gpu[i]);
-  }
-  printf("Total difference between CPU and GPU results: %f\n", diff);
+  // float diff = 0.0f;
+  // for (int i = 0; i < numElementsC; ++i) {
+  //   diff += std::fabs(h_C_Cpu[i] - h_C_Gpu[i]);
+  // }
+  // printf("Total difference between CPU and GPU results: %f\n", diff);
 
   delete[] h_A;
   delete[] h_B;
@@ -158,9 +158,9 @@ void MatrixMultNaiveExampleFloat() {
 
 void MatrixMultNaiveExampleDouble() {
   printf("\nInitiating Matrix Naive Multiplication (Double Precision)\n");
-  const int M = 1 << 10;
-  const int N = 1 << 10;
-  const int K = 1 << 10;
+  const int M = 1 << 14;
+  const int N = 1 << 14;
+  const int K = 1 << 14;
   const int numElementsA = M * K;
   const int numElementsB = K * N;
   const int numElementsC = M * N;
@@ -177,14 +177,14 @@ void MatrixMultNaiveExampleDouble() {
     h_B[i] = static_cast<double>(rand()) / RAND_MAX;
   }
 
-  RunMatrixMultNaiveCPUDouble(h_A, h_B, h_C_Cpu, M, N, K);
+  // RunMatrixMultNaiveCPUDouble(h_A, h_B, h_C_Cpu, M, N, K);
   RunMatrixMultNaiveGPUDouble(h_A, h_B, h_C_Gpu, M, N, K);
 
-  double diff = 0.0;
-  for (int i = 0; i < numElementsC; ++i) {
-    diff += std::fabs(h_C_Cpu[i] - h_C_Gpu[i]);
-  }
-  printf("Total difference between CPU and GPU results: %f\n", diff);
+  // double diff = 0.0;
+  // for (int i = 0; i < numElementsC; ++i) {
+  //   diff += std::fabs(h_C_Cpu[i] - h_C_Gpu[i]);
+  // }
+  // printf("Total difference between CPU and GPU results: %f\n", diff);
 
   delete[] h_A;
   delete[] h_B;

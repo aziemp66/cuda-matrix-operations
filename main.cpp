@@ -10,21 +10,14 @@ using namespace std;
 int main() {
   srand(time(0));
 
-  // VectorAddExampleFloat();
+  MatrixMultTiledExampleGPUFloat();
 
-  // VectorAddExampleDouble();
+  MatrixMultTiledExampleCPUFloat();
 
-  // MatrixAddExampleFloat();
+  // MatrixMultTiledExampleGPUDouble();
 
-  // MatrixAddExampleDouble();
+  // MatrixMultTiledExampleCPUDouble();
 
-  MatrixMultNaiveExampleFloat();
-
-  // MatrixMultNaiveExampleDouble();
-
-  MatrixMultTiledExampleFloat();
-
-  // MatrixMultTiledExampleDouble();
 
   return 0;
 }

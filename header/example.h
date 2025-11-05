@@ -3,20 +3,29 @@
 
 // --- Example Function Declarations ---
 // These functions are defined in the .cpp files.
-void VectorAddExampleFloat();
 
-void VectorAddExampleDouble();
+// Vector Addition
+float VectorAddExampleCPUFloat();
+float VectorAddExampleGPUFloat();
+float VectorAddExampleCPUDouble();
+float VectorAddExampleGPUDouble();
 
-void MatrixAddExampleFloat();
+// Matrix Addition
+float MatrixAddExampleCPUFloat();
+float MatrixAddExampleGPUFloat();
+float MatrixAddExampleCPUDouble();
+float MatrixAddExampleGPUDouble();
 
-void MatrixAddExampleDouble();
+// Matrix Multiplication (Naive)
+float MatrixMultNaiveExampleCPUFloat();
+float MatrixMultNaiveExampleGPUFloat();
+float MatrixMultNaiveExampleCPUDouble();
+float MatrixMultNaiveExampleGPUDouble();
 
-void MatrixMultNaiveExampleFloat();
-
-void MatrixMultNaiveExampleDouble();
-
-void MatrixMultTiledExampleFloat();
-
-void MatrixMultTiledExampleDouble();
+// Matrix Multiplication (Tiled)
+float MatrixMultTiledExampleCPUFloat();
+float MatrixMultTiledExampleGPUFloat();
+float MatrixMultTiledExampleCPUDouble();
+float MatrixMultTiledExampleGPUDouble();
 
 #endif // EXAMPLE_H

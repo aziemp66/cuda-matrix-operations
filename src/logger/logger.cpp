@@ -7,21 +7,84 @@
 static FILE* logFile = nullptr;
 static bool loggerInitialized = false;
 
-void initLogger(const char* filename) {
+const char* EXPECTED_HEADER = "task_type,platform,threads_per_block,size,duration_ms";
+
+// Check if file exists
+static bool fileExists(const char* filename) {
+  FILE* testFile = fopen(filename, "r");
+  if (testFile != nullptr) {
+    fclose(testFile);
+    return true;
+  }
+  return false;
+}
+
+// Validate CSV header if file exists
+static bool validateHeader(const char* filename) {
+  FILE* testFile = fopen(filename, "r");
+  if (testFile == nullptr) {
+    // File doesn't exist, which is fine (will create new)
+    return true;
+  }
+  
+  char header[256];
+  if (fgets(header, sizeof(header), testFile) == nullptr) {
+    // Empty file, treat as new file
+    fclose(testFile);
+    return true;
+  }
+  
+  fclose(testFile);
+  
+  // Remove newline if present
+  size_t len = strlen(header);
+  if (len > 0 && header[len - 1] == '\n') {
+    header[len - 1] = '\0';
+  }
+  
+  // Compare with expected header
+  if (strcmp(header, EXPECTED_HEADER) != 0) {
+    printf("Error: CSV file '%s' has invalid header format.\n", filename);
+    printf("  Expected: %s\n", EXPECTED_HEADER);
+    printf("  Found:    %s\n", header);
+    printf("  Please fix the file or use a different path.\n");
+    return false;
+  }
+  
+  return true;
+}
+
+bool initLogger(const char* filename) {
   if (loggerInitialized) {
     closeLogger();
   }
   
-  logFile = fopen(filename, "w");
-  if (logFile == nullptr) {
-    printf("Warning: Could not open log file %s for writing\n", filename);
-    return;
+  // Validate existing file if it exists
+  if (fileExists(filename)) {
+    if (!validateHeader(filename)) {
+      return false;
+    }
   }
   
-  // Write CSV header
-  fprintf(logFile, "task_type,platform,threads_per_block,size,duration_ms\n");
-  fflush(logFile);
+  // Open in append mode (creates file if it doesn't exist)
+  logFile = fopen(filename, "a");
+  if (logFile == nullptr) {
+    printf("Error: Could not open log file %s for writing\n", filename);
+    return false;
+  }
+  
+  // Check if file is new (empty or just created)
+  // In append mode, file position is at the end, so we need to check file size
+  fseek(logFile, 0, SEEK_END);
+  long fileSize = ftell(logFile);
+  if (fileSize == 0) {
+    // New file, write header
+    fprintf(logFile, "%s\n", EXPECTED_HEADER);
+    fflush(logFile);
+  }
+  
   loggerInitialized = true;
+  return true;
 }
 
 const char* getTaskTypeString(TaskType taskType) {

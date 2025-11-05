@@ -47,6 +47,8 @@ add_executable(
     src/kernels/matrix_mult_naive.cu
     src/kernels/matrix_mult_tiled.cu
     src/logger/logger.cpp
+    src/task_executor/task_executor.cpp
+    src/arg_parser/arg_parser.cpp
 )
 
 # Modern CMake creates imported targets for CUDA libraries.

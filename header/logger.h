@@ -17,8 +17,9 @@ enum class Platform {
   GPU
 };
 
-// Initialize logger (opens CSV file, writes header)
-void initLogger(const char* filename = "results.csv");
+// Initialize logger (opens CSV file, writes header if new, validates header if exists)
+// Returns true on success, false on error (e.g., invalid CSV format)
+bool initLogger(const char* filename = "results.csv");
 
 // Log a result entry
 void logResult(TaskType taskType, Platform platform, int threadsPerBlock, int size, float duration);

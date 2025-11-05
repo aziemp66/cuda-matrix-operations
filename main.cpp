@@ -1,63 +1,59 @@
 #include "example.h"
-#include "header/example.h"
-#include "header/logger.h"
+#include "logger.h"
+#include "task_executor.h"
+#include "arg_parser.h"
+#include "config.h"
 
 #include <cstdlib>
 #include <ctime>
-#include <unistd.h>
 #include <cstdio>
-#include <cstring>
 
-using namespace std;
-
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   srand(time(0));
 
-  // Default values
-  int TPB = 32;
-  int n = 1024;  // 1 << 10
-
   // Parse command-line arguments
-  for (int i = 1; i < argc; i++) {
-    if (strncmp(argv[i], "-tpb=", 5) == 0) {
-      TPB = atoi(argv[i] + 5);
-      if (TPB <= 0) {
-        printf("Error: TPB must be a positive integer\n");
-        return 1;
-      }
-    } else if (strncmp(argv[i], "-size=", 6) == 0) {
-      n = atoi(argv[i] + 6);
-      if (n <= 0) {
-        printf("Error: size must be a positive integer\n");
-        return 1;
-      }
-    } else {
-      printf("Unknown argument: %s\n", argv[i]);
-      printf("Usage: %s [-tpb=<value>] [-size=<value>]\n", argv[0]);
-      printf("  -tpb=<value>:   Threads per block (int, default: 32)\n");
-      printf("  -size=<value>:  Size parameter (int, default: 1024) - for vectors this is the size, for matrices this is n (matrix will be n x n)\n");
-      return 1;
+  Config config;
+  if (!parseArguments(argc, argv, config)) {
+    return 1;
+  }
+
+  printf("Using TPB=%d, size=%d\n\n", config.tpb, config.size);
+
+  // Initialize logger
+  if (!initLogger(config.log_path.c_str())) {
+    printf("Failed to initialize logger. Exiting.\n");
+    return 1;
+  }
+
+  // Parse and execute tasks
+  std::vector<std::string> tasksToRun;
+  if (!config.tasks.empty()) {
+    // Parse comma-separated task list
+    for (const auto& taskArg : config.tasks) {
+      auto parsedTasks = parseTaskList(taskArg.c_str());
+      tasksToRun.insert(tasksToRun.end(), parsedTasks.begin(), parsedTasks.end());
     }
   }
 
-  printf("Using TPB=%d, size=%d\n\n", TPB, n);
-
-  // Initialize logger
-  initLogger("results/results.csv");
-
-  float timeCPU = MatrixMultNaiveExampleCPUFloat(TPB, n);
-
-  float timeGPU = MatrixMultNaiveExampleGPUFloat(TPB, n);
-
-  printf("Winner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
-  printf("\ndifference: %f\n", timeCPU - timeGPU);
-
-  // timeCPU = MatrixMultTiledExampleCPUFloat(TPB, n);
-
-  // timeGPU = MatrixMultTiledExampleGPUFloat(TPB, n);
-
-  // printf("Winner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
-  // printf("\ndifference: %f\n", timeCPU - timeGPU);
+  // Execute tasks
+  if (tasksToRun.empty()) {
+    // Default: run matrixmultnaive CPU and GPU float
+    printf("No tasks specified, running default: matrixmultnaive_cpu_float,matrixmultnaive_gpu_float\n\n");
+    float timeCPU = MatrixMultNaiveExampleCPUFloat(config.tpb, config.size);
+    float timeGPU = MatrixMultNaiveExampleGPUFloat(config.tpb, config.size);
+    printf("\nWinner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
+    printf("Difference: %f ms\n", timeCPU - timeGPU);
+  } else {
+    printf("Running %zu task(s):\n", tasksToRun.size());
+    for (size_t i = 0; i < tasksToRun.size(); i++) {
+      printf("  [%zu] %s\n", i + 1, tasksToRun[i].c_str());
+    }
+    printf("\n");
+    
+    if (!executeTasks(tasksToRun, config.tpb, config.size)) {
+      printf("\nWarning: Some tasks failed to execute.\n");
+    }
+  }
 
   // Close logger
   closeLogger();

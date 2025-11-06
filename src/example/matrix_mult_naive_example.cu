@@ -32,9 +32,8 @@ float MatrixMultNaiveExampleCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -69,106 +68,29 @@ float MatrixMultNaiveExampleGPUFloat(int TPB, int n) {
 
   clock_t start = clock();
 
-  cudaError_t err = cudaMalloc((void **)&d_A, sizeA);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_A: %s\n", cudaGetErrorString(err));
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMalloc((void **)&d_A, sizeA);
+  cudaMalloc((void **)&d_B, sizeB);
+  cudaMalloc((void **)&d_C, sizeC);
 
-  err = cudaMalloc((void **)&d_B, sizeB);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMalloc((void **)&d_C, sizeC);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_A: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
   dim3 threadsPerBlock(TPB, TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
-  err = cudaGetLastError();
-  if (err != cudaSuccess) {
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess)
     printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaDeviceSynchronize();
 
-  err = cudaDeviceSynchronize();
-  if (err != cudaSuccess) {
-    printf("CUDA sync failed: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for h_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);
@@ -205,9 +127,8 @@ float MatrixMultNaiveExampleCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -242,106 +163,29 @@ float MatrixMultNaiveExampleGPUDouble(int TPB, int n) {
 
   clock_t start = clock();
 
-  cudaError_t err = cudaMalloc((void **)&d_A, sizeA);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_A: %s\n", cudaGetErrorString(err));
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMalloc((void **)&d_A, sizeA);
+  cudaMalloc((void **)&d_B, sizeB);
+  cudaMalloc((void **)&d_C, sizeC);
 
-  err = cudaMalloc((void **)&d_B, sizeB);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMalloc((void **)&d_C, sizeC);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_A: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
 
   dim3 threadsPerBlock(TPB, TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
-  err = cudaGetLastError();
-  if (err != cudaSuccess) {
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess)
     printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaDeviceSynchronize();
 
-  err = cudaDeviceSynchronize();
-  if (err != cudaSuccess) {
-    printf("CUDA sync failed: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for h_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);

@@ -188,9 +188,8 @@ float MatrixAddExampleCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Add Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("CPU Matrix Add Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_ADD, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -218,97 +217,29 @@ float MatrixAddExampleGPUFloat(int TPB, int n) {
 
   clock_t start = clock();
 
-  // Allocate GPU memory with error checking
-  cudaError_t err = cudaMalloc((void **)&d_A, size);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_A: %s\n", cudaGetErrorString(err));
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMalloc((void **)&d_A, size);
+  cudaMalloc((void **)&d_B, size);
+  cudaMalloc((void **)&d_C, size);
 
-  err = cudaMalloc((void **)&d_B, size);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMalloc((void **)&d_C, size);
-  if (err != cudaSuccess) {
-    printf("CUDA malloc failed for d_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  // Copy data to device with error checking
-  err = cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_A: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
-
-  err = cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for d_B: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
 
   dim3 threadsPerBlock(TPB, TPB);
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x,
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   matrixAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N);
-  err = cudaGetLastError();
-  if (err != cudaSuccess) {
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess)
     printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
   cudaDeviceSynchronize();
 
-  err = cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
-  if (err != cudaSuccess) {
-    printf("CUDA memcpy failed for h_C: %s\n", cudaGetErrorString(err));
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    delete[] h_A;
-    delete[] h_B;
-    delete[] h_C;
-    return -1.0f;
-  }
+  cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Add Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("GPU Matrix Add Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_ADD, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);
@@ -340,9 +271,8 @@ float MatrixAddExampleCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Add Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("CPU Matrix Add Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_ADD, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -391,9 +321,8 @@ float MatrixAddExampleGPUDouble(int TPB, int n) {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Add Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
+  printf("GPU Matrix Add Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
+  
   logResult(TaskType::MATRIX_ADD, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);

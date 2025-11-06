@@ -55,10 +55,105 @@ cmake --build . --config Release -- -j$(nproc)
 ```
 
 ## Run
-From `build/`:
-```sh
-./matrix_ops
+
+The program accepts several command-line arguments to customize execution. Run from the `build/` directory:
+
+```bash
+./matrix_ops [-tpb=<value>] [-size=<value>] [-path=<path>] [-task=<tasks>]
 ```
+
+### Command-line Arguments
+
+#### 1. Thread Block Size (-tpb)
+- Purpose: Sets the number of threads per block (in each dimension for 2D blocks)
+- Default: 32 (resulting in 32x32 thread blocks)
+- Format: `-tpb=<positive_integer>`
+- Examples:
+  ```bash
+  ./matrix_ops -tpb=16    # Use 16x16 thread blocks
+  ./matrix_ops -tpb=32    # Use 32x32 thread blocks (default)
+  ```
+
+#### 2. Problem Size (-size)
+- Purpose: Sets the size of vectors/matrices
+- Default: 1024
+- Format: `-size=<positive_integer>`
+- For vectors: Determines number of elements
+- For matrices: Determines dimensions (n x n)
+- Examples:
+  ```bash
+  ./matrix_ops -size=1024  # 1024-element vectors, 1024x1024 matrices
+  ./matrix_ops -size=2048  # 2048-element vectors, 2048x2048 matrices
+  ```
+
+#### 3. Log File Path (-path)
+- Purpose: Specifies where to save performance results
+- Default: "performance.csv"
+- Format: `-path=<filepath>`
+- Examples:
+  ```bash
+  ./matrix_ops -path=results.csv          # Save to results.csv
+  ./matrix_ops -path=logs/benchmark.csv   # Save to logs/benchmark.csv
+  ```
+
+#### 4. Task Selection (-task)
+- Purpose: Specifies which operations to run
+- Format: `-task=<taskname>_<platform>_<type>`
+- Components:
+  - `taskname`: Operation to perform
+    - `vectoradd`
+    - `matrixadd`
+    - `matrixmultnaive`
+    - `matrixmulttiled`
+  - `platform`: Execution platform
+    - `cpu`
+    - `gpu`
+  - `type`: Data precision
+    - `float`
+    - `double`
+- Multiple tasks: Use comma separation (no spaces)
+- Examples:
+  ```bash
+  # Single task
+  ./matrix_ops -task=vectoradd_gpu_float
+
+  # Multiple tasks
+  ./matrix_ops -task=matrixmulttiled_gpu_float,matrixmulttiled_cpu_float
+
+  # Different precisions
+  ./matrix_ops -task=matrixadd_gpu_float,matrixadd_gpu_double
+  ```
+
+### Complete Examples
+
+1. Basic vector addition with custom size:
+```bash
+./matrix_ops -task=vectoradd_gpu_float -size=1048576
+```
+
+2. Compare CPU vs GPU matrix multiplication:
+```bash
+./matrix_ops -task=matrixmultnaive_cpu_float,matrixmultnaive_gpu_float -size=1024 -path=mult_comparison.csv
+```
+
+3. Benchmark different thread block sizes:
+```bash
+./matrix_ops -task=matrixmulttiled_gpu_float -tpb=16 -size=2048
+./matrix_ops -task=matrixmulttiled_gpu_float -tpb=32 -size=2048
+```
+
+4. Full precision comparison:
+```bash
+./matrix_ops -task=matrixadd_gpu_float,matrixadd_gpu_double,matrixadd_cpu_float,matrixadd_cpu_double -size=2048
+```
+
+### Notes
+- If no tasks are specified, all operations will be executed
+- Invalid task names will trigger an error message
+- TPB must be a positive integer
+- Size must be a positive integer
+- Results are automatically logged to the specified path
+- All arguments are optional and have default values
 
 This runs benchmarks comparing:
 - CPU vs GPU implementations

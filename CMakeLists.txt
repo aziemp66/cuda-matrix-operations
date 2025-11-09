@@ -35,6 +35,7 @@ set(CMAKE_CUDA_ARCHITECTURES 75 80)
 add_executable(
     matrix_ops
     main.cpp
+    src/config/config.cpp
     src/example/vector_add_example.cu
     src/example/matrix_add_example.cu
     src/example/matrix_mult_naive_example.cu

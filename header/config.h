@@ -1,12 +1,23 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <string>
+#include <vector>
+
 // Default configuration values
 namespace DefaultConfig {
-  constexpr int DEFAULT_TPB = 32;
-  constexpr int DEFAULT_SIZE = 1024;  // 1 << 10
-  constexpr const char* DEFAULT_LOG_FILE = "results/results.csv";
-}
+extern const int DEFAULT_TPB;
+extern const int DEFAULT_SIZE;
+extern const char *DEFAULT_CPU_LOG_FILE;
+extern const char *DEFAULT_GPU_LOG_FILE;
+} // namespace DefaultConfig
+
+struct Config {
+  int tpb = DefaultConfig::DEFAULT_TPB;
+  int size = DefaultConfig::DEFAULT_SIZE;
+  std::string cpu_log_path;
+  std::string gpu_log_path;
+  std::vector<std::string> tasks;
+};
 
 #endif // CONFIG_H
-

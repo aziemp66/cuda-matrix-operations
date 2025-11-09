@@ -21,11 +21,11 @@ import os
 import matplotlib.pyplot as plt
 
 # --- Configuration ---
-GPU_CSV_FILE = '../results/benchmark_run.csv'
-CPU_CSV_FILE = '../results/benchmark_cpu.csv'
-OUTPUT_CSV_FILE = '../results/all_iterations.csv'
-OUTPUT_EXCEL_FILE = '../results/all_iterations_by_sheet.xlsx'
-OUTPUT_SUMMARY_CSV_FILE = '../results/summary_average.csv'
+GPU_CSV_FILE = './results/gpu_benchmark.csv'
+CPU_CSV_FILE = './results/cpu_benchmark.csv'
+OUTPUT_CSV_FILE = './results/all_iterations.csv'
+OUTPUT_EXCEL_FILE = './results/all_iterations_by_sheet.xlsx'
+OUTPUT_SUMMARY_CSV_FILE = './results/summary_average.csv'
 OUTPUT_GRAPH_FOLDER = './results/graphs' # New graph output folder
 
 # Mapping for threads_per_block to a simpler name
@@ -46,67 +46,53 @@ TASK_TYPE_MAP = {
 
 def process_gpu_data(filename):
     """
-    Loads the GPU benchmark data and reforms it into a long format.
+    Loads the GPU benchmark data with new header format:
+    task_type,platform,threads_per_block,size,duration_ms
     """
-    print(f"Processing all GPU iterations from '{filename}'...")
+    print(f"Processing GPU iterations from '{filename}'...")
     try:
         df = pd.read_csv(filename)
-    except FileNotFoundError:
-        print(f"Error: GPU data file not found: '{filename}'")
-        sys.exit(1)
+        
+        # Verify expected columns
+        expected_cols = ['task_type', 'platform', 'threads_per_block', 'size', 'duration_ms']
+        if not all(col in df.columns for col in expected_cols):
+            raise ValueError(f"GPU CSV missing expected columns. Found: {df.columns}")
+            
+        # Map names and create metrics
+        df['task_type'] = df['task_type'].str.lower().map(TASK_TYPE_MAP)
+        df['threads_per_block'] = df['threads_per_block'].map(THREADS_MAP)
+        df['Metric'] = df['task_type'] + ' ' + df['threads_per_block']
+        df['N'] = df['size'].str.strip().apply(lambda s: f"({s})^2")
+        df['Iteration'] = df.groupby(['N', 'Metric']).cumcount() + 1
+        
+        return df[['N', 'Metric', 'Iteration', 'duration_ms']]
     except Exception as e:
-        print(f"Error reading GPU CSV: {e}")
+        print(f"Error processing GPU data: {e}")
         sys.exit(1)
-
-    # 1. Map complex names to simpler ones
-    # Use .str.lower() for case-insensitive matching
-    df['task_type'] = df['task_type'].str.lower().map(TASK_TYPE_MAP)
-    df['threads_per_block'] = df['threads_per_block'].map(THREADS_MAP)
-    
-    # 2. Create a new, combined 'Metric' column (e.g., "Naive 8*8")
-    df['Metric'] = df['task_type'] + ' ' + df['threads_per_block']
-    
-    # 3. Format the 'size' column to 'N' (e.g., "(1 << 8)^2")
-    df['N'] = df['size'].str.strip().apply(lambda s: f"({s})^2")
-    
-    # 4. Add an 'Iteration' number (1-indexed)
-    # groupby().cumcount() creates 0-indexed counter, so add 1
-    df['Iteration'] = df.groupby(['N', 'Metric']).cumcount() + 1
-    
-    # 5. Select only the columns we need
-    df_final = df[['N', 'Metric', 'Iteration', 'duration_ms']]
-    
-    print("GPU data processed.")
-    return df_final
 
 def process_cpu_data(filename):
     """
-    Loads the CPU benchmark data and reforms it into a long format.
+    Loads the CPU benchmark data with new header format:
+    task_type,platform,size,duration_ms
     """
-    print(f"Processing all CPU iterations from '{filename}'...")
+    print(f"Processing CPU iterations from '{filename}'...")
     try:
         df = pd.read_csv(filename)
-    except FileNotFoundError:
-        print(f"Error: CPU data file not found: '{filename}'")
-        sys.exit(1)
+        
+        # Verify expected columns
+        expected_cols = ['task_type', 'platform', 'size', 'duration_ms']
+        if not all(col in df.columns for col in expected_cols):
+            raise ValueError(f"CPU CSV missing expected columns. Found: {df.columns}")
+            
+        # Create metrics
+        df['Metric'] = 'CPU'
+        df['N'] = df['size'].str.strip().apply(lambda s: f"({s})^2")
+        df['Iteration'] = df.groupby(['N', 'Metric']).cumcount() + 1
+        
+        return df[['N', 'Metric', 'Iteration', 'duration_ms']]
     except Exception as e:
-        print(f"Error reading CPU CSV: {e}")
+        print(f"Error processing CPU data: {e}")
         sys.exit(1)
-
-    # 1. Create the 'Metric' column (all 'CPU')
-    df['Metric'] = 'CPU'
-    
-    # 2. Format the 'size' column to 'N' (e.g., "(1 << 8)^2")
-    df['N'] = df['size'].str.strip().apply(lambda s: f"({s})^2")
-
-    # 3. Add an 'Iteration' number (1-indexed)
-    df['Iteration'] = df.groupby(['N', 'Metric']).cumcount() + 1
-    
-    # 4. Select only the columns we need
-    df_final = df[['N', 'Metric', 'Iteration', 'duration_ms']]
-    
-    print("CPU data processed.")
-    return df_final
 
 # --- NEW GRAPHING FUNCTIONS ---
 

@@ -3,7 +3,6 @@
 
 #include <cstdio>
 
-// Task types
 enum class TaskType {
   VECTOR_ADD,
   MATRIX_ADD,
@@ -11,25 +10,23 @@ enum class TaskType {
   MATRIX_MULT_TILED
 };
 
-// Platform types
-enum class Platform {
-  CPU,
-  GPU
-};
+enum class Platform { CPU, GPU };
 
-// Initialize logger (opens CSV file, writes header if new, validates header if exists)
-// Returns true on success, false on error (e.g., invalid CSV format)
-bool initLogger(const char* filename = "results.csv");
+// Declare headers as external
+extern const char *const CPU_EXPECTED_HEADER;
+extern const char *const GPU_EXPECTED_HEADER;
 
-// Log a result entry
-void logResult(TaskType taskType, Platform platform, int threadsPerBlock, int size, float duration);
+// Initialize logger with separate paths for CPU and GPU logs
+bool initLogger(const char *cpuFilename = "cpu_results.csv",
+                const char *gpuFilename = "gpu_results.csv");
 
-// Close logger (closes file)
+// Log a result entry (automatically chooses correct file based on platform)
+void logResult(TaskType taskType, Platform platform, int threadsPerBlock,
+               int size, float duration);
+
+// Close both loggers
 void closeLogger();
 
-// Helper function to convert size to bitwise format string
-// Returns a string like "1 << 10" for 1024
-const char* sizeToBitwiseFormat(int size);
+const char *sizeToBitwiseFormat(int size);
 
 #endif // LOGGER_H
-

@@ -1,21 +1,20 @@
 #!/bin/bash
 
 # --- Default Configuration ---
-# Set the path to your compiled binary
 BINARY_PATH="./build/matrix_ops"
 
 # Default run arguments
-LOG_FILE="results/benchmark_run.csv"
-TASKS="matrixmultnaive_gpu_float,matrixmulttiled_gpu_float"
+CPU_LOG_FILE="results/cpu_benchmark.csv"
+GPU_LOG_FILE="results/gpu_benchmark.csv"
+TASKS="matrixmultnaive_gpu_float,matrixmulttiled_gpu_float,matrixmultnaive_cpu_float"
 NUM_RUNS=10
 
 # Default Benchmark Loops
 START_EXP=8
-END_EXP=12
+END_EXP=10
 TPB_LIST="8 16 32"
 
 # --- Argument Parsing ---
-# Parses arguments in the format -key=value, similar to the C++ program
 for arg in "$@"
 do
     case $arg in
@@ -23,8 +22,12 @@ do
         TASKS="${arg#*=}"
         shift
         ;;
-        -path=*)
-        LOG_FILE="${arg#*=}"
+        -cpu_path=*)
+        CPU_LOG_FILE="${arg#*=}"
+        shift
+        ;;
+        -gpu_path=*)
+        GPU_LOG_FILE="${arg#*=}"
         shift
         ;;
         -iterations=*)
@@ -32,12 +35,10 @@ do
         shift
         ;;
         -tpb=*)
-        # Accepts a space-separated list for the benchmark loop (e.g., -tpb="8 16 32")
         TPB_LIST="${arg#*=}"
         shift
         ;;
         -exp_range=*)
-        # Accepts range in format START:END (e.g., -exp_range=8:12)
         RANGE="${arg#*=}"
         START_EXP=$(echo "$RANGE" | cut -d':' -f1)
         END_EXP=$(echo "$RANGE" | cut -d':' -f2)
@@ -47,45 +48,58 @@ do
         echo "Usage: $0 [options]"
         echo "Options:"
         echo "  -task=<list>       Comma-separated list of tasks (default: $TASKS)"
-        echo "  -path=<file>       Path to log file (default: $LOG_FILE)"
-        echo "  -iterations=<int>  Number of runs per configuration (default: $NUM_RUNS)"
-        echo "  -tpb=<list>        Space-separated list of TPB values to test (default: \"$TPB_LIST\")"
-        echo "  -exp_range=<S:E>   Start and End exponents for size (1<<N) (default: $START_EXP:$END_EXP)"
+        echo "  -cpu_path=<file>   Path to CPU log file (default: $CPU_LOG_FILE)"
+        echo "  -gpu_path=<file>   Path to GPU log file (default: $GPU_LOG_FILE)"
+        echo "  -iterations=<int>   Number of runs per configuration (default: $NUM_RUNS)"
+        echo "  -tpb=<list>        Space-separated list of TPB values (default: \"$TPB_LIST\")"
+        echo "  -exp_range=<S:E>   Size exponents range (default: $START_EXP:$END_EXP)"
         exit 0
         ;;
         *)
-        # Ignore unknown arguments or pass them through if needed
         shift
         ;;
     esac
 done
 
-# --- Check if binary exists ---
+# --- Check binary ---
 if [ ! -f "$BINARY_PATH" ]; then
     echo "Error: Binary not found at $BINARY_PATH"
     echo "Please build the project first."
     exit 1
 fi
 
-# --- Create results directory if it doesn't exist ---
-mkdir -p "$(dirname "$LOG_FILE")"
+# --- Create results directories ---
+mkdir -p "$(dirname "$CPU_LOG_FILE")"
+mkdir -p "$(dirname "$GPU_LOG_FILE")"
+
+# Separate CPU and GPU tasks
+CPU_TASKS=""
+GPU_TASKS=""
+IFS=',' read -ra TASK_ARRAY <<< "$TASKS"
+for task in "${TASK_ARRAY[@]}"; do
+    if [[ $task == *"cpu"* ]]; then
+        CPU_TASKS="${CPU_TASKS:+$CPU_TASKS,}$task"
+    else
+        GPU_TASKS="${GPU_TASKS:+$GPU_TASKS,}$task"
+    fi
+done
 
 # --- Main Loop ---
 echo "Starting benchmark..."
 echo "Configuration:"
 echo "  Binary:      $BINARY_PATH"
-echo "  Tasks:       $TASKS"
-echo "  Log File:    $LOG_FILE"
+echo "  CPU Tasks:   $CPU_TASKS"
+echo "  GPU Tasks:   $GPU_TASKS"
+echo "  CPU Log:     $CPU_LOG_FILE"
+echo "  GPU Log:     $GPU_LOG_FILE"
 echo "  Iterations:  $NUM_RUNS"
 echo "  Size Range:  1<<$START_EXP to 1<<$END_EXP"
 echo "  TPB Values:  $TPB_LIST"
 echo ""
 
-# Outer loop for iterating through sizes
 for size_exp in $(seq $START_EXP $END_EXP)
 do
     SIZE="1 << $size_exp"
-    # This shell arithmetic evaluates the size for logging purposes
     SIZE_EVAL=$((1 << $size_exp))
     
     echo "################################################"
@@ -93,30 +107,44 @@ do
     echo "################################################"
     echo ""
 
-    # Middle loop for iterating through TPB values
-    for tpb in $TPB_LIST
-    do
-        echo "   ======================================"
-        echo "   ### Testing TPB: $tpb ###"
-        echo "   ======================================"
-        echo ""
-
-        # Inner loop for running N iterations per size and TPB
+    # Run CPU tasks (only size loop)
+    if [ ! -z "$CPU_TASKS" ]; then
+        echo "=== Running CPU Tasks ==="
         for i in $(seq 1 $NUM_RUNS)
         do
-            echo "--- [ Run $i of $NUM_RUNS for size $SIZE, TPB $tpb ] ---"
-            
-            # Execute the binary with the specified arguments
-            $BINARY_PATH -task="$TASKS" -size="$SIZE" -tpb="$tpb" -path="$LOG_FILE"
-            
+            echo "--- [ CPU Run $i of $NUM_RUNS for size $SIZE ] ---"
+            $BINARY_PATH -task="$CPU_TASKS" -size="$SIZE" \
+                        -cpu_path="$CPU_LOG_FILE" -gpu_path="$GPU_LOG_FILE"
             echo "-------------------------------------------------"
             echo ""
         done
-        
-        echo "" # Add a space between TPB benchmarks
-    done
+    fi
 
-    echo "" # Add a space between size benchmarks
+    # Run GPU tasks (size and TPB loops)
+    if [ ! -z "$GPU_TASKS" ]; then
+        echo "=== Running GPU Tasks ==="
+        for tpb in $TPB_LIST
+        do
+            echo "   ======================================"
+            echo "   ### Testing TPB: $tpb ###"
+            echo "   ======================================"
+            echo ""
+
+            for i in $(seq 1 $NUM_RUNS)
+            do
+                echo "--- [ GPU Run $i of $NUM_RUNS for size $SIZE, TPB $tpb ] ---"
+                $BINARY_PATH -task="$GPU_TASKS" -size="$SIZE" -tpb="$tpb" \
+                            -cpu_path="$CPU_LOG_FILE" -gpu_path="$GPU_LOG_FILE"
+                echo "-------------------------------------------------"
+                echo ""
+            done
+            echo ""
+        done
+    fi
+
+    echo ""
 done
 
-echo "Benchmark complete. Results are in $LOG_FILE"
+echo "Benchmark complete."
+echo "CPU results in $CPU_LOG_FILE"
+echo "GPU results in $GPU_LOG_FILE"

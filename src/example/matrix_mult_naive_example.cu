@@ -32,8 +32,9 @@ float MatrixMultNaiveExampleCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
-  
+  printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
+         duration, TPB * TPB, M, N);
+
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -80,17 +81,16 @@ float MatrixMultNaiveExampleGPUFloat(int TPB, int n) {
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess)
-    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+
   cudaDeviceSynchronize();
 
   cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
-  
+  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
+         duration, TPB * TPB, M, N);
+
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);
@@ -127,8 +127,9 @@ float MatrixMultNaiveExampleCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
-  
+  printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
+         duration, TPB * TPB, M, N);
+
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
 
   delete[] h_A;
@@ -175,17 +176,16 @@ float MatrixMultNaiveExampleGPUDouble(int TPB, int n) {
                      (M + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   matrixMultNaive<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, M, N, K);
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess)
-    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+
   cudaDeviceSynchronize();
 
   cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
-  
+  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
+         duration, TPB * TPB, M, N);
+
   logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
 
   cudaFree(d_A);

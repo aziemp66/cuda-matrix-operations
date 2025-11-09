@@ -24,8 +24,9 @@ float VectorAddExampleCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
-  
+  printf("CPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration,
+         TPB, N);
+
   logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
 
   delete[] h_A;
@@ -59,7 +60,7 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
     delete[] h_C;
     return -1.0f;
   }
-  
+
   err = cudaMalloc((void **)&d_B, size);
   if (err != cudaSuccess) {
     printf("CUDA malloc failed for d_B: %s\n", cudaGetErrorString(err));
@@ -69,7 +70,7 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
     delete[] h_C;
     return -1.0f;
   }
-  
+
   err = cudaMalloc((void **)&d_C, size);
   if (err != cudaSuccess) {
     printf("CUDA malloc failed for d_C: %s\n", cudaGetErrorString(err));
@@ -93,7 +94,7 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
     delete[] h_C;
     return -1.0f;
   }
-  
+
   err = cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
   if (err != cudaSuccess) {
     printf("CUDA memcpy failed for d_B: %s\n", cudaGetErrorString(err));
@@ -137,8 +138,9 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
-  
+  printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration,
+         TPB, N);
+
   logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
 
   cudaFree(d_A);
@@ -167,8 +169,9 @@ float VectorAddExampleCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
-  
+  printf("CPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration,
+         TPB, N);
+
   logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
 
   delete[] h_A;
@@ -204,17 +207,16 @@ float VectorAddExampleGPUDouble(int TPB, int n) {
   dim3 blocksPerGrid((N + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
   vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, N);
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess)
-    printf("Kernel launch failed: %s\n", cudaGetErrorString(err));
+
   cudaDeviceSynchronize();
 
   cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
-  
+  printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration,
+         TPB, N);
+
   logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
 
   cudaFree(d_A);

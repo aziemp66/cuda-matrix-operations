@@ -23,9 +23,7 @@ float MatrixMultNaiveExampleCPUDouble(int TPB, int n);
 float MatrixMultNaiveExampleGPUDouble(int TPB, int n);
 
 // Matrix Multiplication (Tiled)
-float MatrixMultTiledExampleCPUFloat(int TPB, int n);
 float MatrixMultTiledExampleGPUFloat(int TPB, int n);
-float MatrixMultTiledExampleCPUDouble(int TPB, int n);
 float MatrixMultTiledExampleGPUDouble(int TPB, int n);
 
 #endif // EXAMPLE_H

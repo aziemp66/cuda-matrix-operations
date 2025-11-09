@@ -8,41 +8,6 @@
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultTiledExampleCPUFloat(int TPB, int n) {
-  const int M = n;
-  const int N = n;
-  const int K = n;
-  const int numElementsA = M * K;
-  const int numElementsB = K * N;
-  const int numElementsC = M * N;
-
-  float *h_A = new float[numElementsA];
-  float *h_B = new float[numElementsB];
-  float *h_C = new float[numElementsC];
-
-  for (int i = 0; i < numElementsA; ++i) {
-    h_A[i] = static_cast<float>(rand()) / RAND_MAX;
-  }
-  for (int i = 0; i < numElementsB; ++i) {
-    h_B[i] = static_cast<float>(rand()) / RAND_MAX;
-  }
-
-  clock_t start = clock();
-  matrixMultCPU(h_A, h_B, h_C, M, N, K);
-  clock_t end = clock();
-
-  float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
-  logResult(TaskType::MATRIX_MULT_TILED, Platform::CPU, TPB * TPB, M, duration);
-
-  delete[] h_A;
-  delete[] h_B;
-  delete[] h_C;
-  return duration;
-}
-
 float MatrixMultTiledExampleGPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
@@ -100,41 +65,6 @@ float MatrixMultTiledExampleGPUFloat(int TPB, int n) {
   delete[] h_B;
   delete[] h_C;
 
-  return duration;
-}
-
-float MatrixMultTiledExampleCPUDouble(int TPB, int n) {
-  const int M = n;
-  const int N = n;
-  const int K = n;
-  const int numElementsA = M * K;
-  const int numElementsB = K * N;
-  const int numElementsC = M * N;
-
-  double *h_A = new double[numElementsA];
-  double *h_B = new double[numElementsB];
-  double *h_C = new double[numElementsC];
-
-  for (int i = 0; i < numElementsA; ++i) {
-    h_A[i] = static_cast<double>(rand()) / RAND_MAX;
-  }
-  for (int i = 0; i < numElementsB; ++i) {
-    h_B[i] = static_cast<double>(rand()) / RAND_MAX;
-  }
-
-  clock_t start = clock();
-  matrixMultCPU(h_A, h_B, h_C, M, N, K);
-  clock_t end = clock();
-
-  float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Tiled Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
-
-  logResult(TaskType::MATRIX_MULT_TILED, Platform::CPU, TPB * TPB, M, duration);
-
-  delete[] h_A;
-  delete[] h_B;
-  delete[] h_C;
   return duration;
 }
 

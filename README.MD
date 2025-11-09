@@ -104,7 +104,7 @@ The program accepts several command-line arguments to customize execution. Run f
     - `vectoradd`
     - `matrixadd`
     - `matrixmultnaive`
-    - `matrixmulttiled`
+    - `matrixmulttiled (only this doesn't have the CPU verison)`
   - `platform`: Execution platform
     - `cpu`
     - `gpu`

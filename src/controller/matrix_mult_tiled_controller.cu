@@ -1,14 +1,13 @@
+#include "controller.h"
 #include "cpu.h"
-#include "example.h"
 #include "kernels.h"
 #include "logger.h"
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultTiledExampleGPUFloat(int TPB, int n) {
+float MatrixMultTiledControllerGPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -68,7 +67,7 @@ float MatrixMultTiledExampleGPUFloat(int TPB, int n) {
   return duration;
 }
 
-float MatrixMultTiledExampleGPUDouble(int TPB, int n) {
+float MatrixMultTiledControllerGPUDouble(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;

@@ -1,14 +1,13 @@
+#include "controller.h"
 #include "cpu.h"
-#include "example.h"
 #include "kernels.h"
 #include "logger.h"
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
-float VectorAddExampleCPUFloat(int TPB, int n) {
+float VectorAddControllerCPUFloat(int TPB, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
@@ -35,7 +34,7 @@ float VectorAddExampleCPUFloat(int TPB, int n) {
   return duration;
 }
 
-float VectorAddExampleGPUFloat(int TPB, int n) {
+float VectorAddControllerGPUFloat(int TPB, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
@@ -153,7 +152,7 @@ float VectorAddExampleGPUFloat(int TPB, int n) {
   return duration;
 }
 
-float VectorAddExampleCPUDouble(int TPB, int n) {
+float VectorAddControllerCPUDouble(int TPB, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
@@ -180,7 +179,7 @@ float VectorAddExampleCPUDouble(int TPB, int n) {
   return duration;
 }
 
-float VectorAddExampleGPUDouble(int TPB, int n) {
+float VectorAddControllerGPUDouble(int TPB, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];

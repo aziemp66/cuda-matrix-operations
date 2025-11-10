@@ -1,5 +1,5 @@
+#include "controller.h"
 #include "cpu.h"
-#include "example.h"
 #include "kernels.h"
 #include "logger.h"
 
@@ -102,8 +102,8 @@ void RunMatrixAddGPUDouble(const double *h_A, const double *h_B, double *h_C,
   cudaFree(d_C);
 }
 
-// Example functions use the separated wrappers
-void MatrixAddExampleFloat() {
+// Controller functions use the separated wrappers
+void MatrixAddControllerFloat() {
   printf("\nInitiating Matrix Addition (Float Precision)\n");
   const int M = 1 << 10;
   const int N = 1 << 10;
@@ -134,7 +134,7 @@ void MatrixAddExampleFloat() {
   delete[] h_C_Gpu;
 }
 
-void MatrixAddExampleDouble() {
+void MatrixAddControllerDouble() {
   printf("\nInitiating Matrix Addition (Double Precision)\n");
   const int M = 1 << 10;
   const int N = 1 << 10;
@@ -165,7 +165,7 @@ void MatrixAddExampleDouble() {
   delete[] h_C_Gpu;
 }
 
-float MatrixAddExampleCPUFloat(int TPB, int n) {
+float MatrixAddControllerCPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -195,7 +195,7 @@ float MatrixAddExampleCPUFloat(int TPB, int n) {
   return duration;
 }
 
-float MatrixAddExampleGPUFloat(int TPB, int n) {
+float MatrixAddControllerGPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -248,7 +248,7 @@ float MatrixAddExampleGPUFloat(int TPB, int n) {
   return duration;
 }
 
-float MatrixAddExampleCPUDouble(int TPB, int n) {
+float MatrixAddControllerCPUDouble(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -278,7 +278,7 @@ float MatrixAddExampleCPUDouble(int TPB, int n) {
   return duration;
 }
 
-float MatrixAddExampleGPUDouble(int TPB, int n) {
+float MatrixAddControllerGPUDouble(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;

@@ -1,6 +1,6 @@
 #include "task_executor.h"
 #include "config.h"
-#include "example.h"
+#include "controller.h"
 
 #include <cctype>
 #include <cstdio>
@@ -67,7 +67,7 @@ bool executeTask(const char *taskStr, int TPB, int n) {
     printf("Error: Invalid task format '%s'. Expected format: "
            "{taskname}_{platform}_{type}\n",
            taskStr);
-    printf("  Example: matrixmultnaive_gpu_float\n");
+    printf("  Controller: matrixmultnaive_gpu_float\n");
     return false;
   }
 
@@ -80,63 +80,63 @@ bool executeTask(const char *taskStr, int TPB, int n) {
   if (strcmp(taskName, "vectoradd") == 0) {
     if (strcmp(platform, "cpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        VectorAddExampleCPUFloat(TPB, n);
+        VectorAddControllerCPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        VectorAddExampleCPUDouble(TPB, n);
+        VectorAddControllerCPUDouble(TPB, n);
         return true;
       }
     } else if (strcmp(platform, "gpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        VectorAddExampleGPUFloat(TPB, n);
+        VectorAddControllerGPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        VectorAddExampleGPUDouble(TPB, n);
+        VectorAddControllerGPUDouble(TPB, n);
         return true;
       }
     }
   } else if (strcmp(taskName, "matrixadd") == 0) {
     if (strcmp(platform, "cpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        MatrixAddExampleCPUFloat(TPB, n);
+        MatrixAddControllerCPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        MatrixAddExampleCPUDouble(TPB, n);
+        MatrixAddControllerCPUDouble(TPB, n);
         return true;
       }
     } else if (strcmp(platform, "gpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        MatrixAddExampleGPUFloat(TPB, n);
+        MatrixAddControllerGPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        MatrixAddExampleGPUDouble(TPB, n);
+        MatrixAddControllerGPUDouble(TPB, n);
         return true;
       }
     }
   } else if (strcmp(taskName, "matrixmultnaive") == 0) {
     if (strcmp(platform, "cpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        MatrixMultNaiveExampleCPUFloat(TPB, n);
+        MatrixMultNaiveControllerCPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        MatrixMultNaiveExampleCPUDouble(TPB, n);
+        MatrixMultNaiveControllerCPUDouble(TPB, n);
         return true;
       }
     } else if (strcmp(platform, "gpu") == 0) {
       if (strcmp(type, "float") == 0) {
-        MatrixMultNaiveExampleGPUFloat(TPB, n);
+        MatrixMultNaiveControllerGPUFloat(TPB, n);
         return true;
       } else if (strcmp(type, "double") == 0) {
-        MatrixMultNaiveExampleGPUDouble(TPB, n);
+        MatrixMultNaiveControllerGPUDouble(TPB, n);
         return true;
       }
     }
   } else if (strcmp(taskName, "matrixmulttiled") == 0) {
     if (strcmp(type, "float") == 0) {
-      MatrixMultTiledExampleGPUFloat(TPB, n);
+      MatrixMultTiledControllerGPUFloat(TPB, n);
       return true;
     } else if (strcmp(type, "double") == 0) {
-      MatrixMultTiledExampleGPUDouble(TPB, n);
+      MatrixMultTiledControllerGPUDouble(TPB, n);
       return true;
     }
   }

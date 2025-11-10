@@ -1,6 +1,6 @@
 #include "arg_parser.h"
 #include "config.h"
-#include "example.h"
+#include "controller.h"
 #include "logger.h"
 #include "task_executor.h"
 
@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
     // Default: run matrixmultnaive CPU and GPU float
     printf("No tasks specified, running default: "
            "matrixmultnaive_cpu_float,matrixmultnaive_gpu_float\n\n");
-    float timeCPU = MatrixMultNaiveExampleCPUFloat(config.tpb, config.size);
-    float timeGPU = MatrixMultNaiveExampleGPUFloat(config.tpb, config.size);
+    float timeCPU = MatrixMultNaiveControllerCPUFloat(config.tpb, config.size);
+    float timeGPU = MatrixMultNaiveControllerGPUFloat(config.tpb, config.size);
     printf("\nWinner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
     printf("Difference: %f ms\n", timeCPU - timeGPU);
   } else {

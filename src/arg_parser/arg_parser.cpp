@@ -86,7 +86,7 @@ void printUsage(const char *programName) {
          "matrixmultnaive, matrixmulttiled\n");
   printf("                     Platforms: cpu, gpu\n");
   printf("                     Types: float, double\n");
-  printf("\nExample:\n");
+  printf("\nController:\n");
   printf("  %s -tpb=16 -size=\"1 << 10\" -cpu_path=cpu_results.csv "
          "-gpu_path=gpu_results.csv\n",
          programName);

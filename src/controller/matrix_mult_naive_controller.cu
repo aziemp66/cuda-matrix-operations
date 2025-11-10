@@ -1,14 +1,13 @@
+#include "controller.h"
 #include "cpu.h"
-#include "example.h"
 #include "kernels.h"
 #include "logger.h"
 
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultNaiveExampleCPUFloat(int TPB, int n) {
+float MatrixMultNaiveControllerCPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -43,7 +42,7 @@ float MatrixMultNaiveExampleCPUFloat(int TPB, int n) {
   return duration;
 }
 
-float MatrixMultNaiveExampleGPUFloat(int TPB, int n) {
+float MatrixMultNaiveControllerGPUFloat(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -103,7 +102,7 @@ float MatrixMultNaiveExampleGPUFloat(int TPB, int n) {
   return duration;
 }
 
-float MatrixMultNaiveExampleCPUDouble(int TPB, int n) {
+float MatrixMultNaiveControllerCPUDouble(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -138,7 +137,7 @@ float MatrixMultNaiveExampleCPUDouble(int TPB, int n) {
   return duration;
 }
 
-float MatrixMultNaiveExampleGPUDouble(int TPB, int n) {
+float MatrixMultNaiveControllerGPUDouble(int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;

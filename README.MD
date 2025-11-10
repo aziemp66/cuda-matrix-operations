@@ -7,7 +7,7 @@ Project demonstrating various CUDA implementations for vector and matrix operati
 - [header/](header/)
   - [kernels.h](header/kernels.h) — GPU kernel declarations
   - [cpu.h](header/cpu.h) — CPU implementation declarations
-  - [example.h](header/example.h) — Example function declarations
+  - [controller.h](header/controller.h) — Controller function declarations
   - [logger.h](header/logger.h) — Performance logging utilities
 - [src/](src/)
   - [kernels/](src/kernels/)
@@ -15,11 +15,11 @@ Project demonstrating various CUDA implementations for vector and matrix operati
     - [matrix_mult_naive.cu](src/kernels/matrix_mult_naive.cu) — Naive matrix multiplication
     - [matrix_mult_tiled.cu](src/kernels/matrix_mult_tiled.cu) — Tiled matrix multiplication
     - [vector_add.cu](src/kernels/vector_add.cu) — Vector addition kernels
-  - [example/](src/example/)
-    - [matrix_add_example.cu](src/example/matrix_add_example.cu) — Matrix addition examples
-    - [matrix_mult_naive_example.cu](src/example/matrix_mult_naive_example.cu) — Naive multiplication examples
-    - [matrix_mult_tiled_example.cu](src/example/matrix_mult_tiled_example.cu) — Tiled multiplication examples
-    - [vector_add_example.cu](src/example/vector_add_example.cu) — Vector addition examples
+  - [controller/](src/controller/)
+    - [matrix_add_controller.cu](src/controller/matrix_add_controller.cu) — Matrix addition controllers
+    - [matrix_mult_naive_controller.cu](src/controller/matrix_mult_naive_controller.cu) — Naive multiplication controllers
+    - [matrix_mult_tiled_controller.cu](src/controller/matrix_mult_tiled_controller.cu) — Tiled multiplication controllers
+    - [vector_add_controller.cu](src/controller/vector_add_controller.cu) — Vector addition controllers
   - [cpu/](src/cpu/) — CPU implementations
 - [main.cpp](main.cpp) — Entry point and benchmarks
 - [build/](build/) — CMake build directory (ignored by .gitignore)
@@ -68,7 +68,7 @@ The program accepts several command-line arguments to customize execution. Run f
 - Purpose: Sets the number of threads per block (in each dimension for 2D blocks)
 - Default: 32 (resulting in 32x32 thread blocks)
 - Format: `-tpb=<positive_integer>`
-- Examples:
+- Controllers:
   ```bash
   ./matrix_ops -tpb=16    # Use 16x16 thread blocks
   ./matrix_ops -tpb=32    # Use 32x32 thread blocks (default)
@@ -80,7 +80,7 @@ The program accepts several command-line arguments to customize execution. Run f
 - Format: `-size=<positive_integer>`
 - For vectors: Determines number of elements
 - For matrices: Determines dimensions (n x n)
-- Examples:
+- Controllers:
   ```bash
   ./matrix_ops -size=1024  # 1024-element vectors, 1024x1024 matrices
   ./matrix_ops -size=2048  # 2048-element vectors, 2048x2048 matrices
@@ -90,7 +90,7 @@ The program accepts several command-line arguments to customize execution. Run f
 - Purpose: Specifies where to save performance results
 - Default: "performance.csv"
 - Format: `-path=<filepath>`
-- Examples:
+- Controllers:
   ```bash
   ./matrix_ops -path=results.csv          # Save to results.csv
   ./matrix_ops -path=logs/benchmark.csv   # Save to logs/benchmark.csv
@@ -112,7 +112,7 @@ The program accepts several command-line arguments to customize execution. Run f
     - `float`
     - `double`
 - Multiple tasks: Use comma separation (no spaces)
-- Examples:
+- Controllers:
   ```bash
   # Single task
   ./matrix_ops -task=vectoradd_gpu_float
@@ -124,7 +124,7 @@ The program accepts several command-line arguments to customize execution. Run f
   ./matrix_ops -task=matrixadd_gpu_float,matrixadd_gpu_double
   ```
 
-### Complete Examples
+### Complete Controllers
 
 1. Basic vector addition with custom size:
 ```bash

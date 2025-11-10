@@ -36,10 +36,10 @@ add_executable(
     matrix_ops
     main.cpp
     src/config/config.cpp
-    src/example/vector_add_example.cu
-    src/example/matrix_add_example.cu
-    src/example/matrix_mult_naive_example.cu
-    src/example/matrix_mult_tiled_example.cu
+    src/controller/vector_add_controller.cu
+    src/controller/matrix_add_controller.cu
+    src/controller/matrix_mult_naive_controller.cu
+    src/controller/matrix_mult_tiled_controller.cu
     src/cpu/vector_add_cpu.cpp
     src/cpu/matrix_add_cpu.cpp
     src/cpu/matrix_mult_cpu.cpp

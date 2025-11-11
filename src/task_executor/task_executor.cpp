@@ -1,6 +1,7 @@
 #include "task_executor.h"
 #include "config.h"
 #include "controller.h"
+#include "cpu.h"
 
 #include <cctype>
 #include <cmath>
@@ -75,7 +76,7 @@ double compareResults(double *h_C, double *h_C_compare, int n) {
 }
 
 bool executeTask(const char *taskStr, int TPB, int n, int num_runs,
-                 float *h_C_compare) {
+                 std::vector<float> h_C_compare) {
   // Format: {taskname}_{platform}_{type}
   // e.g., "matrixmultnaive_gpu_float"
 
@@ -103,54 +104,52 @@ bool executeTask(const char *taskStr, int TPB, int n, int num_runs,
   toLowercase(type);
 
   float diff;
-  float *h_C;
+  std::vector<float> h_C;
 
   // Execute the appropriate function based on task name
   if (strcmp(taskName, "vectoradd") == 0) {
     if (strcmp(platform, "cpu") == 0) {
-      VectorAddControllerCPUFloat(h_C, n);
-      delete[] h_C;
+      printf("here in task executor\n");
+      VectorAddControllerCPU(h_C, n);
+      // log results
+      for (int i = 0; i < n; i++) {
+        printf("h_C[%d] = %f\n", i, h_C[i]);
+      }
       return true;
     } else if (strcmp(platform, "gpu") == 0) {
-      VectorAddControllerGPUFloat(h_C, TPB, n);
-      diff = compareResults(h_C, h_C_compare, n);
+      VectorAddControllerGPU(h_C, TPB, n);
+      diff = compareResults(h_C.data(), h_C_compare.data(), n);
       printf("diff error: %f\n", diff);
-      delete[] h_C;
       return true;
     }
   } else if (strcmp(taskName, "matrixadd") == 0) {
     if (strcmp(platform, "cpu") == 0) {
-      MatrixAddControllerCPUFloat(h_C, n);
-      delete[] h_C_compare;
+      MatrixAddControllerCPU(h_C, n);
       return true;
     } else if (strcmp(platform, "gpu") == 0) {
-      MatrixAddControllerGPUFloat(h_C, TPB, n);
-      diff = compareResults(h_C, h_C_compare, n);
+      MatrixAddControllerGPU(h_C, TPB, n);
+      diff = compareResults(h_C.data(), h_C_compare.data(), n);
       printf("diff error: %f\n", diff);
-      delete[] h_C;
       return true;
     }
 
   } else if (strcmp(taskName, "matrixmultnaive") == 0) {
     if (strcmp(platform, "cpu") == 0) {
-      MatrixMultNaiveControllerCPUFloat(h_C, n);
+      MatrixMultNaiveControllerCPU(h_C, n);
 
-      delete[] h_C;
       return true;
     } else if (strcmp(platform, "gpu") == 0) {
-      MatrixMultNaiveControllerGPUFloat(h_C, TPB, n);
+      MatrixMultNaiveControllerGPU(h_C, TPB, n);
 
-      diff = compareResults(h_C, h_C_compare, n);
+      diff = compareResults(h_C.data(), h_C_compare.data(), n);
       printf("diff error: %f\n", diff);
-      delete[] h_C;
       return true;
     }
   } else if (strcmp(taskName, "matrixmulttiled") == 0) {
     if (strcmp(platform, "gpu") == 0) {
-      MatrixMultTiledControllerGPUFloat(h_C, TPB, n);
-      diff = compareResults(h_C, h_C_compare, n);
+      MatrixMultTiledControllerGPU(h_C, TPB, n);
+      diff = compareResults(h_C.data(), h_C_compare.data(), n);
       printf("diff error: %f\n", diff);
-      delete[] h_C;
       return true;
     }
   }
@@ -165,17 +164,13 @@ bool executeTasks(const std::vector<std::string> &tasks,
                   int num_runs) {
   bool allSuccess = true;
   // generate h_C_compare once for all type of tasks
-  float *vector_add_h_C_compare;
-  float *matrix_add_h_C_compare;
-  float *matrix_mult_h_C_compare;
+  std::vector<float> vector_add_h_C_compare;
+  std::vector<float> matrix_add_h_C_compare;
+  std::vector<float> matrix_mult_h_C_compare;
 
   for (int i = n_exp_start; i <= n_exp_end; i++) {
-    printf("=== Executing tasks for size %d ===\n", 1 << i);
     int n = 1 << i;
-    // Precompute reference results
-    VectorAddControllerCPUFloat(vector_add_h_C_compare, n);
-    MatrixAddControllerCPUFloat(matrix_add_h_C_compare, n);
-    MatrixMultNaiveControllerCPUFloat(matrix_mult_h_C_compare, n);
+    printf("=== Executing tasks for size %d ===\n", n);
 
     for (const auto &task : tasks) {
       // get platform from task string
@@ -189,7 +184,8 @@ bool executeTasks(const std::vector<std::string> &tasks,
       if (platform == "cpu") {
         printf("Executing CPU task: %s at size %d\n", task.c_str(), n);
         for (int i = 0; i < num_runs; i++) {
-          bool success = executeTask(task.c_str(), 0, n, num_runs, nullptr);
+          bool success =
+              executeTask(task.c_str(), 0, n, num_runs, std::vector<float>());
           if (!success) {
             allSuccess = false;
           }
@@ -199,7 +195,7 @@ bool executeTasks(const std::vector<std::string> &tasks,
           printf("Executing GPU task: %s with TPB=%d at size %d\n",
                  task.c_str(), tpb, n);
           for (int i = 0; i < num_runs; i++) {
-            float *h_C_compare;
+            std::vector<float> h_C_compare;
             if (taskName == "vectoradd") {
               h_C_compare = vector_add_h_C_compare;
             } else if (taskName == "matrixadd") {
@@ -222,10 +218,6 @@ bool executeTasks(const std::vector<std::string> &tasks,
         allSuccess = false;
       }
     }
-
-    delete[] vector_add_h_C_compare;
-    delete[] matrix_add_h_C_compare;
-    delete[] matrix_mult_h_C_compare;
   }
 
   return allSuccess;

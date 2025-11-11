@@ -6,8 +6,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
-float MatrixMultNaiveControllerCPUFloat(float *h_C, int n) {
+float MatrixMultNaiveControllerCPU(std::vector<float> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -17,7 +18,7 @@ float MatrixMultNaiveControllerCPUFloat(float *h_C, int n) {
 
   float *h_A = new float[numElementsA];
   float *h_B = new float[numElementsB];
-  h_C = new float[numElementsC];
+  h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -27,7 +28,7 @@ float MatrixMultNaiveControllerCPUFloat(float *h_C, int n) {
   }
 
   clock_t start = clock();
-  matrixMultCPU(h_A, h_B, h_C, M, N, K);
+  matrixMultCPU(h_A, h_B, h_C.data(), M, N, K);
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -41,7 +42,7 @@ float MatrixMultNaiveControllerCPUFloat(float *h_C, int n) {
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUFloat(float *h_C, int TPB, int n) {
+float MatrixMultNaiveControllerGPU(std::vector<float> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -51,7 +52,7 @@ float MatrixMultNaiveControllerGPUFloat(float *h_C, int TPB, int n) {
 
   float *h_A = new float[numElementsA];
   float *h_B = new float[numElementsB];
-  h_C = new float[numElementsC];
+  h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -82,7 +83,7 @@ float MatrixMultNaiveControllerGPUFloat(float *h_C, int TPB, int n) {
 
   cudaDeviceSynchronize();
 
-  cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_C.data(), d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -100,7 +101,7 @@ float MatrixMultNaiveControllerGPUFloat(float *h_C, int TPB, int n) {
   return duration;
 }
 
-float MatrixMultNaiveControllerCPUDouble(double *h_C, int n) {
+float MatrixMultNaiveControllerCPU(std::vector<double> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -110,7 +111,7 @@ float MatrixMultNaiveControllerCPUDouble(double *h_C, int n) {
 
   double *h_A = new double[numElementsA];
   double *h_B = new double[numElementsB];
-  h_C = new double[numElementsC];
+  h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -120,7 +121,7 @@ float MatrixMultNaiveControllerCPUDouble(double *h_C, int n) {
   }
 
   clock_t start = clock();
-  matrixMultCPU(h_A, h_B, h_C, M, N, K);
+  matrixMultCPU(h_A, h_B, h_C.data(), M, N, K);
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -134,7 +135,7 @@ float MatrixMultNaiveControllerCPUDouble(double *h_C, int n) {
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUDouble(double *h_C, int TPB, int n) {
+float MatrixMultNaiveControllerGPU(std::vector<double> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -144,7 +145,7 @@ float MatrixMultNaiveControllerGPUDouble(double *h_C, int TPB, int n) {
 
   double *h_A = new double[numElementsA];
   double *h_B = new double[numElementsB];
-  h_C = new double[numElementsC];
+  h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -175,7 +176,7 @@ float MatrixMultNaiveControllerGPUDouble(double *h_C, int TPB, int n) {
 
   cudaDeviceSynchronize();
 
-  cudaMemcpy(h_C, d_C, sizeC, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_C.data(), d_C, sizeC, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;

@@ -6,15 +6,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
-float MatrixAddControllerCPUFloat(float *h_C, int n) {
+float MatrixAddControllerCPU(std::vector<float> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
 
   float *h_A = new float[numElements];
   float *h_B = new float[numElements];
-  h_C = new float[numElements];
+  h_C.resize(numElements);
 
   for (int i = 0; i < numElements; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -22,7 +23,7 @@ float MatrixAddControllerCPUFloat(float *h_C, int n) {
   }
 
   clock_t start = clock();
-  matrixAddCPU(h_A, h_B, h_C, M, N);
+  matrixAddCPU(h_A, h_B, h_C.data(), M, N);
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -35,7 +36,7 @@ float MatrixAddControllerCPUFloat(float *h_C, int n) {
   return duration;
 }
 
-float MatrixAddControllerGPUFloat(float *h_C, int TPB, int n) {
+float MatrixAddControllerGPU(std::vector<float> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -43,7 +44,7 @@ float MatrixAddControllerGPUFloat(float *h_C, int TPB, int n) {
 
   float *h_A = new float[numElements];
   float *h_B = new float[numElements];
-  h_C = new float[numElements];
+  h_C.resize(numElements);
 
   for (int i = 0; i < numElements; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -69,7 +70,7 @@ float MatrixAddControllerGPUFloat(float *h_C, int TPB, int n) {
 
   cudaDeviceSynchronize();
 
-  cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_C.data(), d_C, size, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -87,14 +88,14 @@ float MatrixAddControllerGPUFloat(float *h_C, int TPB, int n) {
   return duration;
 }
 
-float MatrixAddControllerCPUDouble(double *h_C, int n) {
+float MatrixAddControllerCPU(std::vector<double> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
 
   double *h_A = new double[numElements];
   double *h_B = new double[numElements];
-  h_C = new double[numElements];
+  h_C.resize(numElements);
 
   for (int i = 0; i < numElements; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -102,7 +103,7 @@ float MatrixAddControllerCPUDouble(double *h_C, int n) {
   }
 
   clock_t start = clock();
-  matrixAddCPU(h_A, h_B, h_C, M, N);
+  matrixAddCPU(h_A, h_B, h_C.data(), M, N);
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
@@ -116,7 +117,7 @@ float MatrixAddControllerCPUDouble(double *h_C, int n) {
   return duration;
 }
 
-float MatrixAddControllerGPUDouble(double *h_C, int TPB, int n) {
+float MatrixAddControllerGPU(std::vector<double> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -124,7 +125,7 @@ float MatrixAddControllerGPUDouble(double *h_C, int TPB, int n) {
 
   double *h_A = new double[numElements];
   double *h_B = new double[numElements];
-  h_C = new double[numElements];
+  h_C.resize(numElements);
 
   for (int i = 0; i < numElements; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -150,7 +151,7 @@ float MatrixAddControllerGPUDouble(double *h_C, int TPB, int n) {
 
   cudaDeviceSynchronize();
 
-  cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_C.data(), d_C, size, cudaMemcpyDeviceToHost);
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;

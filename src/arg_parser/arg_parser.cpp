@@ -39,7 +39,11 @@ bool parseArguments(int argc, char *argv[], Config &config) {
           return false;
         }
       }
-
+      printf("Configured TPB list: ");
+      for (int tpb : config.tpb_list) {
+        printf("%d ", tpb);
+      }
+      printf("\n");
     } else if (strncmp(argv[i], "-size_exp_range=", 16) == 0) {
       const char *sizeStr = argv[i] + 16;
       int startRange, endRange;
@@ -51,6 +55,9 @@ bool parseArguments(int argc, char *argv[], Config &config) {
         }
         config.size_expo_range_start = startRange;
         config.size_expo_range_end = endRange;
+
+        printf("Configured size exponent range: %d to %d\n",
+               config.size_expo_range_start, config.size_expo_range_end);
       } else {
         printf("Error: Invalid size_expo_range format. Use start:end (e.g., "
                "8:12)\n");
@@ -60,12 +67,15 @@ bool parseArguments(int argc, char *argv[], Config &config) {
     } else if (strncmp(argv[i], "-cpu_path=", 10) == 0) {
       config.cpu_log_path = std::string(argv[i] + 10);
 
+      printf("Configured CPU log path: %s\n", config.cpu_log_path.c_str());
     } else if (strncmp(argv[i], "-gpu_path=", 10) == 0) {
       config.gpu_log_path = std::string(argv[i] + 10);
 
+      printf("Configured GPU log path: %s\n", config.gpu_log_path.c_str());
     } else if (strncmp(argv[i], "-task=", 6) == 0) {
       config.tasks.push_back(std::string(argv[i] + 6));
 
+      printf("Added task: %s\n", (argv[i] + 6));
     } else if (strncmp(argv[i], "-num_runs=", 10) == 0) {
       int runs = atoi(argv[i] + 10);
       if (runs <= 0) {
@@ -73,6 +83,8 @@ bool parseArguments(int argc, char *argv[], Config &config) {
         return false;
       }
       config.num_runs = runs;
+
+      printf("Configured number of runs: %d\n", config.num_runs);
     } else {
       printf("Unknown argument: %s\n", argv[i]);
       // Ensure printUsage is declared in arg_parser.h

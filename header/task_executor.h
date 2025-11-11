@@ -13,7 +13,8 @@ std::vector<std::string> parseTaskList(const char *tasksStr);
 // Returns true if successful, false otherwise
 bool executeTask(const char *taskStr, int TPB, int n);
 
-bool executeTask(const char *taskStr, int TPB, int n, float *h_C_compare);
+bool executeTask(const char *taskStr, int TPB, int n,
+                 std::vector<float> h_C_compare);
 
 // Execute multiple tasks
 // Returns true if all tasks succeeded, false otherwise

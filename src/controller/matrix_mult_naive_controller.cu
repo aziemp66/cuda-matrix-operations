@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultNaiveControllerCPUFloat(int TPB, int n) {
+float MatrixMultNaiveControllerCPUFloat(float *h_C, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -17,7 +17,7 @@ float MatrixMultNaiveControllerCPUFloat(int TPB, int n) {
 
   float *h_A = new float[numElementsA];
   float *h_B = new float[numElementsB];
-  float *h_C = new float[numElementsC];
+  h_C = new float[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -31,18 +31,17 @@ float MatrixMultNaiveControllerCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("CPU Matrix Mult Naive Float Time: %f ms (Size: %d x %d)\n", duration,
+         M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
 
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUFloat(int TPB, int n) {
+float MatrixMultNaiveControllerGPUFloat(float *h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -52,7 +51,7 @@ float MatrixMultNaiveControllerGPUFloat(int TPB, int n) {
 
   float *h_A = new float[numElementsA];
   float *h_B = new float[numElementsB];
-  float *h_C = new float[numElementsC];
+  h_C = new float[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -97,12 +96,11 @@ float MatrixMultNaiveControllerGPUFloat(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }
 
-float MatrixMultNaiveControllerCPUDouble(int TPB, int n) {
+float MatrixMultNaiveControllerCPUDouble(double *h_C, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -112,7 +110,7 @@ float MatrixMultNaiveControllerCPUDouble(int TPB, int n) {
 
   double *h_A = new double[numElementsA];
   double *h_B = new double[numElementsB];
-  double *h_C = new double[numElementsC];
+  h_C = new double[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -126,18 +124,17 @@ float MatrixMultNaiveControllerCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("CPU Matrix Mult Naive Double Time: %f ms (Size: %d x %d)\n", duration,
+         M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, TPB * TPB, M, duration);
+  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
 
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUDouble(int TPB, int n) {
+float MatrixMultNaiveControllerGPUDouble(double *h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -147,7 +144,7 @@ float MatrixMultNaiveControllerGPUDouble(int TPB, int n) {
 
   double *h_A = new double[numElementsA];
   double *h_B = new double[numElementsB];
-  double *h_C = new double[numElementsC];
+  h_C = new double[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -192,7 +189,6 @@ float MatrixMultNaiveControllerGPUDouble(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }

@@ -7,11 +7,11 @@
 #include <cstdlib>
 #include <ctime>
 
-float VectorAddControllerCPUFloat(int TPB, int n) {
+float VectorAddControllerCPUFloat(float *h_C, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
-  float *h_C = new float[N];
+  h_C = new float[N];
 
   for (int i = 0; i < N; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -23,22 +23,20 @@ float VectorAddControllerCPUFloat(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration,
-         TPB, N);
+  printf("CPU Vector Add Float Time: %f ms (Size: %d)\n", duration, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
+  logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
 
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
   return duration;
 }
 
-float VectorAddControllerGPUFloat(int TPB, int n) {
+float VectorAddControllerGPUFloat(float *h_C, int TPB, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
-  float *h_C = new float[N];
+  h_C = new float[N];
 
   for (int i = 0; i < N; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -147,16 +145,15 @@ float VectorAddControllerGPUFloat(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }
 
-float VectorAddControllerCPUDouble(int TPB, int n) {
+float VectorAddControllerCPUDouble(double *h_C, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
-  double *h_C = new double[N];
+  h_C = new double[N];
 
   for (int i = 0; i < N; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -168,22 +165,20 @@ float VectorAddControllerCPUDouble(int TPB, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration,
-         TPB, N);
+  printf("CPU Vector Add Double Time: %f ms (Size: %d)\n", duration, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::CPU, TPB, N, duration);
+  logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
 
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
   return duration;
 }
 
-float VectorAddControllerGPUDouble(int TPB, int n) {
+float VectorAddControllerGPUDouble(double *h_C, int TPB, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
-  double *h_C = new double[N];
+  h_C = new double[N];
 
   for (int i = 0; i < N; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -223,7 +218,6 @@ float VectorAddControllerGPUDouble(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }

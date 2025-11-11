@@ -11,6 +11,8 @@ project(CudaMatrixOps LANGUAGES CXX CUDA)
 # Find the installed CUDA Toolkit on the system.
 find_package(CUDAToolkit REQUIRED)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Set the C++ standard for the entire project.
 # This applies to both.cpp and.cu files compiled by the host compiler.
 set(CMAKE_CXX_STANDARD 20)

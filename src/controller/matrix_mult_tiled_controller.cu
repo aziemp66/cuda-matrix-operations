@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 
-float MatrixMultTiledControllerGPUFloat(int TPB, int n) {
+float MatrixMultTiledControllerGPUFloat(float *h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -17,7 +17,7 @@ float MatrixMultTiledControllerGPUFloat(int TPB, int n) {
 
   float *h_A = new float[numElementsA];
   float *h_B = new float[numElementsB];
-  float *h_C = new float[numElementsC];
+  h_C = new float[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<float>(rand()) / RAND_MAX;
@@ -62,12 +62,11 @@ float MatrixMultTiledControllerGPUFloat(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }
 
-float MatrixMultTiledControllerGPUDouble(int TPB, int n) {
+float MatrixMultTiledControllerGPUDouble(double *h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -77,7 +76,7 @@ float MatrixMultTiledControllerGPUDouble(int TPB, int n) {
 
   double *h_A = new double[numElementsA];
   double *h_B = new double[numElementsB];
-  double *h_C = new double[numElementsC];
+  h_C = new double[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -122,7 +121,6 @@ float MatrixMultTiledControllerGPUDouble(int TPB, int n) {
   cudaFree(d_C);
   delete[] h_A;
   delete[] h_B;
-  delete[] h_C;
 
   return duration;
 }

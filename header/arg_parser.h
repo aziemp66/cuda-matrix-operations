@@ -2,8 +2,6 @@
 #define ARG_PARSER_H
 
 #include "config.h"
-#include <string>
-#include <vector>
 
 // Parse command-line arguments
 // Returns true if parsing was successful, false otherwise

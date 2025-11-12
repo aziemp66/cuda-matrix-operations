@@ -17,8 +17,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  printf("Using TPB=%d, size=%d\n\n", config.tpb, config.size);
-
   // Initialize logger
   if (!initLogger(config.cpu_log_path.c_str(), config.gpu_log_path.c_str())) {
     printf("Failed to initialize logger. Exiting.\n");
@@ -38,22 +36,16 @@ int main(int argc, char *argv[]) {
 
   // Execute tasks
   if (tasksToRun.empty()) {
-    // Default: run matrixmultnaive CPU and GPU float
-    printf("No tasks specified, running default: "
-           "matrixmultnaive_cpu_float,matrixmultnaive_gpu_float\n\n");
-    float timeCPU = MatrixMultNaiveControllerCPUFloat(config.tpb, config.size);
-    float timeGPU = MatrixMultNaiveControllerGPUFloat(config.tpb, config.size);
-    printf("\nWinner: %s\n", timeCPU < timeGPU ? "CPU" : "GPU");
-    printf("Difference: %f ms\n", timeCPU - timeGPU);
+    printf("No tasks specified. Exiting.\n");
+    printTaskUsage();
+    closeLogger();
+    return 1;
   } else {
-    printf("Running %zu task(s):\n", tasksToRun.size());
-    for (size_t i = 0; i < tasksToRun.size(); i++) {
-      printf("  [%zu] %s\n", i + 1, tasksToRun[i].c_str());
-    }
-    printf("\n");
-
-    if (!executeTasks(tasksToRun, config.tpb, config.size)) {
-      printf("\nWarning: Some tasks failed to execute.\n");
+    if (!executeTasks(tasksToRun, config.tpb_list, config.size_expo_range_start,
+                      config.size_expo_range_end, config.num_runs)) {
+      printf("One or more tasks failed during execution.\n");
+      closeLogger();
+      return 1;
     }
   }
 

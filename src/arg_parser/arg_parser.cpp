@@ -3,59 +3,91 @@
 
 #include <cstdio>
 #include <cstring>
+#include <sstream> // Added for thread-safe string splitting
+#include <string>
+#include <vector>
 
 bool parseArguments(int argc, char *argv[], Config &config) {
   // Set defaults
-  config.tpb = DefaultConfig::DEFAULT_TPB;
-  config.size = DefaultConfig::DEFAULT_SIZE;
   config.cpu_log_path = DefaultConfig::DEFAULT_CPU_LOG_FILE;
   config.gpu_log_path = DefaultConfig::DEFAULT_GPU_LOG_FILE;
+  config.size_expo_range_start = DefaultConfig::DEFAULT_SIZE_EXPO_RANGE_START;
+  config.size_expo_range_end = DefaultConfig::DEFAULT_SIZE_EXPO_RANGE_END;
+  config.num_runs = DefaultConfig::DEFAULT_NUM_RUNS;
+  config.tpb_list = DefaultConfig::DEFAULT_TPB_LIST;
   config.tasks.clear();
 
   for (int i = 1; i < argc; i++) {
     if (strncmp(argv[i], "-tpb=", 5) == 0) {
-      config.tpb = atoi(argv[i] + 5);
-      if (config.tpb <= 0) {
-        printf("Error: TPB must be a positive integer\n");
-        return false;
-      }
-    } else if (strncmp(argv[i], "-size=", 6) == 0) {
-      const char *sizeStr = argv[i] + 6;
-      int base, exponent;
+      // FIXED: Replaced non thread-safe strtok with std::stringstream
+      config.tpb_list.clear();
+      std::string tpbStr = argv[i] + 5;
+      std::stringstream ss(tpbStr);
+      std::string token;
 
-      // Try parsing bitwise shift (e.g., "1 << 10")
-      if (sscanf(sizeStr, "%d << %d", &base, &exponent) == 2) {
-        config.size = base << exponent;
-      }
-      // Try parsing bitwise shift with no spaces (e.g., "1<<10")
-      else if (sscanf(sizeStr, "%d<<%d", &base, &exponent) == 2) {
-        config.size = base << exponent;
-      }
-      // Try parsing as a plain integer
-      else {
-        config.size = atoi(sizeStr);
-        // Basic check for atoi failure (e.g., "abc")
-        if (config.size == 0 && sizeStr[0] != '0') {
-          printf("Error: Invalid size format: %s\n", sizeStr);
-          printf("  Must be an integer (e.g., 1024) or bitwise shift (e.g., "
-                 "\"1 << 10\").\n");
+      while (std::getline(ss, token, ',')) {
+        try {
+          int tpbValue = std::stoi(token);
+          if (tpbValue < 1) {
+            printf("Error: TPB values must be greater than 0\n");
+            return false;
+          }
+          config.tpb_list.push_back(tpbValue);
+        } catch (...) {
+          printf("Error: Invalid non-integer value in TPB list: %s\n",
+                 token.c_str());
           return false;
         }
       }
+      printf("Configured TPB list: ");
+      for (int tpb : config.tpb_list) {
+        printf("%d ", tpb);
+      }
+      printf("\n");
+    } else if (strncmp(argv[i], "-size_exp_range=", 16) == 0) {
+      const char *sizeStr = argv[i] + 16;
+      int startRange, endRange;
+      if (sscanf(sizeStr, "%d:%d", &startRange, &endRange) == 2) {
+        if (startRange < 0 || endRange < 0 || startRange > endRange) {
+          printf("Error: Invalid size_expo_range values. Ensure 0 <= start <= "
+                 "end.\n");
+          return false;
+        }
+        config.size_expo_range_start = startRange;
+        config.size_expo_range_end = endRange;
 
-      if (config.size <= 0) {
-        printf("Error: size must be a positive integer\n");
+        printf("Configured size exponent range: %d to %d\n",
+               config.size_expo_range_start, config.size_expo_range_end);
+      } else {
+        printf("Error: Invalid size_expo_range format. Use start:end (e.g., "
+               "8:12)\n");
         return false;
       }
+
     } else if (strncmp(argv[i], "-cpu_path=", 10) == 0) {
       config.cpu_log_path = std::string(argv[i] + 10);
+
+      printf("Configured CPU log path: %s\n", config.cpu_log_path.c_str());
     } else if (strncmp(argv[i], "-gpu_path=", 10) == 0) {
       config.gpu_log_path = std::string(argv[i] + 10);
+
+      printf("Configured GPU log path: %s\n", config.gpu_log_path.c_str());
     } else if (strncmp(argv[i], "-task=", 6) == 0) {
-      // Task parsing will be done separately using task_executor
       config.tasks.push_back(std::string(argv[i] + 6));
+
+      printf("Added task: %s\n", (argv[i] + 6));
+    } else if (strncmp(argv[i], "-num_runs=", 10) == 0) {
+      int runs = atoi(argv[i] + 10);
+      if (runs <= 0) {
+        printf("Error: num_runs must be a positive integer\n");
+        return false;
+      }
+      config.num_runs = runs;
+
+      printf("Configured number of runs: %d\n", config.num_runs);
     } else {
       printf("Unknown argument: %s\n", argv[i]);
+      // Ensure printUsage is declared in arg_parser.h
       printUsage(argv[0]);
       return false;
     }
@@ -65,31 +97,31 @@ bool parseArguments(int argc, char *argv[], Config &config) {
 }
 
 void printUsage(const char *programName) {
-  printf("Usage: %s [-tpb=<value>] [-size=<value>] [-cpu_path=<path>] "
-         "[-gpu_path=<path>] [-task=<tasks>]\n",
-         programName);
-  printf("  -tpb=<value>:      Threads per block (int, default: %d)\n",
-         DefaultConfig::DEFAULT_TPB);
-  printf("  -size=<value>:     Size parameter (int, default: %d). Accepts "
-         "integers (e.g., 1024)\n"
-         "                     or bitwise shifts (e.g., \"1 << 10\").\n",
-         DefaultConfig::DEFAULT_SIZE);
-  printf("                     For vectors this is the size, for matrices this "
-         "is n (matrix will be n x n)\n");
-  printf("  -cpu_path=<path>:  Path to CPU log file (string, default: %s)\n",
-         DefaultConfig::DEFAULT_CPU_LOG_FILE);
-  printf("  -gpu_path=<path>:  Path to GPU log file (string, default: %s)\n",
-         DefaultConfig::DEFAULT_GPU_LOG_FILE);
+  printf("Usage: %s [options]\n\n", programName);
+  printf("Options:\n");
+  printf("  -tpb=<list>            Comma-separated list of threads per block "
+         "to test.\n");
+  printf("                         Example: -tpb=16,32,64,128\n");
+  printf("\n");
+  printf("  -size_exp_range=<s:e>  Range of exponents for matrix sizes (2^s to "
+         "2^e).\n");
+  printf("                         Example: -size_exp_range=10:20 tests sizes "
+         "2^10 to 2^20\n");
+  printf("\n");
+  printf("  -num_runs=<n>          Number of times to repeat each test for "
+         "averaging.\n");
+  printf("                         Example: -num_runs=5\n");
+  printf("  -task=<name>           Specific kernel/task to run. Can be used "
+         "multiple times.\n");
+  printf("                         Example: -task=naive -task=tiled\n");
+  printf("\n");
+  printf("  -cpu_path=<path>       File path for saving standard CPU logs.\n");
+  printf("  -gpu_path=<path>       File path for saving standard GPU logs.\n");
+  printf("\n");
   printf("  -task=<tasks>:     Comma-separated list of tasks to run\n");
   printf("                     Format: {taskname}_{platform}_{type}\n");
   printf("                     Task names: vectoradd, matrixadd, "
          "matrixmultnaive, matrixmulttiled\n");
   printf("                     Platforms: cpu, gpu\n");
-  printf("                     Types: float, double\n");
-  printf("\nController:\n");
-  printf("  %s -tpb=16 -size=\"1 << 10\" -cpu_path=cpu_results.csv "
-         "-gpu_path=gpu_results.csv\n",
-         programName);
-  printf("  %s -task=matrixmulttiled_gpu_float,matrixmulttiled_cpu_float\n",
-         programName);
+  printf("                     Types: float, double\n\n");
 }

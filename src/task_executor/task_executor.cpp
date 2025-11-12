@@ -1,10 +1,13 @@
 #include "task_executor.h"
 #include "config.h"
 #include "controller.h"
+#include "cpu.h"
 
 #include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -49,7 +52,38 @@ std::vector<std::string> parseTaskList(const char *tasksStr) {
   return tasks;
 }
 
-bool executeTask(const char *taskStr, int TPB, int n) {
+// --- CORRECTED ---
+// Added 'const' to both pointer arguments
+float compareResults(const float *h_C, const float *h_C_compare, int n) {
+  float maxError = 0.0f;
+  for (int i = 0; i < n; i++) {
+    float error = std::fabs(h_C[i] - h_C_compare[i]);
+    if (error > maxError) {
+      maxError = error;
+    }
+  }
+  return maxError;
+}
+
+// --- CORRECTED ---
+// Added 'const' to both pointer arguments
+double compareResults(const double *h_C, const double *h_C_compare, int n) {
+  // make room for rounding errors
+  double maxError = 0.0;
+  for (int i = 0; i < n; i++) {
+    double error = fabs(h_C[i] - h_C_compare[i]);
+    if (error > maxError) {
+      maxError = error;
+    }
+  }
+  return maxError;
+}
+
+// --- FIX 2: Changed signature to accept const references (solves compile
+// error) ---
+bool executeTask(const char *taskStr, int TPB, int n, int num_runs,
+                 const std::vector<float> &h_C_compare_float,
+                 const std::vector<double> &h_C_compare_double) {
   // Format: {taskname}_{platform}_{type}
   // e.g., "matrixmultnaive_gpu_float"
 
@@ -76,82 +110,172 @@ bool executeTask(const char *taskStr, int TPB, int n) {
   toLowercase(platform);
   toLowercase(type);
 
-  // Execute the appropriate function based on task name
-  if (strcmp(taskName, "vectoradd") == 0) {
-    if (strcmp(platform, "cpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        VectorAddControllerCPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        VectorAddControllerCPUDouble(TPB, n);
-        return true;
+  // We handle floats and doubles in completely separate blocks
+  if (strcmp(type, "float") == 0) {
+    std::vector<float> h_C;
+    float diff;
+
+    if (strcmp(taskName, "vectoradd") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        VectorAddControllerCPUFloat(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        VectorAddControllerGPUFloat(h_C, TPB, n);
       }
-    } else if (strcmp(platform, "gpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        VectorAddControllerGPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        VectorAddControllerGPUDouble(TPB, n);
-        return true;
+    } else if (strcmp(taskName, "matrixadd") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        MatrixAddControllerCPUFloat(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        MatrixAddControllerGPUFloat(h_C, TPB, n);
       }
+    } else if (strcmp(taskName, "matrixmultnaive") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        MatrixMultNaiveControllerCPUFloat(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        MatrixMultNaiveControllerGPUFloat(h_C, TPB, n);
+      }
+    } else if (strcmp(taskName, "matrixmulttiled") == 0) {
+      if (strcmp(platform, "gpu") == 0) {
+        MatrixMultTiledControllerGPUFloat(h_C, TPB, n);
+      } else {
+        printf("Error: matrixmulttiled is only implemented for GPU platform\n");
+        return false;
+      }
+    } else {
+      printf("Error: Unknown task '%s'\n", taskName);
+      return false;
     }
-  } else if (strcmp(taskName, "matrixadd") == 0) {
-    if (strcmp(platform, "cpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        MatrixAddControllerCPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        MatrixAddControllerCPUDouble(TPB, n);
-        return true;
+
+  } else if (strcmp(type, "double") == 0) {
+    std::vector<double> h_C;
+    double diff;
+
+    if (strcmp(taskName, "vectoradd") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        VectorAddControllerCPUDouble(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        VectorAddControllerGPUDouble(h_C, TPB, n);
       }
-    } else if (strcmp(platform, "gpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        MatrixAddControllerGPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        MatrixAddControllerGPUDouble(TPB, n);
-        return true;
+    } else if (strcmp(taskName, "matrixadd") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        MatrixAddControllerCPUDouble(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        MatrixAddControllerGPUDouble(h_C, TPB, n);
       }
+    } else if (strcmp(taskName, "matrixmultnaive") == 0) {
+      if (strcmp(platform, "cpu") == 0) {
+        MatrixMultNaiveControllerCPUDouble(h_C, n);
+      } else if (strcmp(platform, "gpu") == 0) {
+        MatrixMultNaiveControllerGPUDouble(h_C, TPB, n);
+      }
+    } else if (strcmp(taskName, "matrixmulttiled") == 0) {
+      if (strcmp(platform, "gpu") == 0) {
+        MatrixMultTiledControllerGPUDouble(h_C, TPB, n);
+      } else {
+        printf("Error: matrixmulttiled is only implemented for GPU platform\n");
+        return false;
+      }
+    } else {
+      printf("Error: Unknown task '%s'\n", taskName);
+      return false;
     }
-  } else if (strcmp(taskName, "matrixmultnaive") == 0) {
-    if (strcmp(platform, "cpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        MatrixMultNaiveControllerCPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        MatrixMultNaiveControllerCPUDouble(TPB, n);
-        return true;
-      }
-    } else if (strcmp(platform, "gpu") == 0) {
-      if (strcmp(type, "float") == 0) {
-        MatrixMultNaiveControllerGPUFloat(TPB, n);
-        return true;
-      } else if (strcmp(type, "double") == 0) {
-        MatrixMultNaiveControllerGPUDouble(TPB, n);
-        return true;
-      }
-    }
-  } else if (strcmp(taskName, "matrixmulttiled") == 0) {
-    if (strcmp(type, "float") == 0) {
-      MatrixMultTiledControllerGPUFloat(TPB, n);
-      return true;
-    } else if (strcmp(type, "double") == 0) {
-      MatrixMultTiledControllerGPUDouble(TPB, n);
-      return true;
-    }
+
+  } else {
+    printf("Error: Unknown type '%s'\n", type);
+    return false;
   }
 
-  printf("Error: Unknown task '%s'\n", taskStr);
-  printTaskUsage();
-  return false;
+  return true;
 }
 
-bool executeTasks(const std::vector<std::string> &tasks, int TPB, int n) {
+bool executeTasks(const std::vector<std::string> &tasks,
+                  const std::vector<int> TPB, int n_exp_start, int n_exp_end,
+                  int num_runs) {
   bool allSuccess = true;
 
-  for (const auto &task : tasks) {
-    if (!executeTask(task.c_str(), TPB, n)) {
-      allSuccess = false;
+  // Create reference vectors for BOTH types
+  std::vector<float> vector_add_h_C_compare_float;
+  std::vector<float> matrix_add_h_C_compare_float;
+  std::vector<float> matrix_mult_h_C_compare_float;
+
+  std::vector<double> vector_add_h_C_compare_double;
+  std::vector<double> matrix_add_h_C_compare_double;
+  std::vector<double> matrix_mult_h_C_compare_double;
+
+  // Generate reference results
+  int max_n = 1 << n_exp_end;
+  VectorAddControllerCPUFloat(vector_add_h_C_compare_float, max_n);
+  MatrixAddControllerCPUFloat(matrix_add_h_C_compare_float, max_n);
+  MatrixMultNaiveControllerCPUFloat(matrix_mult_h_C_compare_float, max_n);
+
+  VectorAddControllerCPUDouble(vector_add_h_C_compare_double, max_n);
+  MatrixAddControllerCPUDouble(matrix_add_h_C_compare_double, max_n);
+  MatrixMultNaiveControllerCPUDouble(matrix_mult_h_C_compare_double, max_n);
+
+  // --- FIX 3: Declared as persistent, empty objects, not references ---
+  static const std::vector<float> empty_float;
+  static const std::vector<double> empty_double;
+
+  for (int i = n_exp_start; i <= n_exp_end; i++) {
+    int n = 1 << i;
+    printf("=== Executing tasks for size %d ===\n", n);
+
+    for (const auto &task : tasks) {
+      std::string s = task;
+      std::istringstream iss(s);
+      std::string taskName, platform, type;
+      std::getline(iss, taskName, '_');
+      std::getline(iss, platform, '_');
+      std::getline(iss, type, '_');
+
+      if (platform == "cpu") {
+        printf("Executing CPU task: %s at size %d\n", task.c_str(), n);
+        for (int j = 0; j < num_runs; j++) {
+          // Pass the empty reference vectors
+          bool success = executeTask(task.c_str(), 0, n, num_runs, empty_float,
+                                     empty_double);
+          if (!success)
+            allSuccess = false;
+        }
+      } else if (platform == "gpu") {
+        for (int tpb : TPB) {
+          printf("Executing GPU task: %s with TPB=%d at size %d\n",
+                 task.c_str(), tpb, n);
+          for (int j = 0; j < num_runs; j++) {
+
+            // Select the correct compare vector based on type
+            std::vector<float> h_C_compare_float_task;
+            std::vector<double> h_C_compare_double_task;
+
+            if (type == "float") {
+              if (taskName == "vectoradd")
+                h_C_compare_float_task = vector_add_h_C_compare_float;
+              else if (taskName == "matrixadd")
+                h_C_compare_float_task = matrix_add_h_C_compare_float;
+              else if (taskName == "matrixmultnaive" ||
+                       taskName == "matrixmulttiled")
+                h_C_compare_float_task = matrix_mult_h_C_compare_float;
+            } else if (type == "double") {
+              if (taskName == "vectoradd")
+                h_C_compare_double_task = vector_add_h_C_compare_double;
+              else if (taskName == "matrixadd")
+                h_C_compare_double_task = matrix_add_h_C_compare_double;
+              else if (taskName == "matrixmultnaive" ||
+                       taskName == "matrixmulttiled")
+                h_C_compare_double_task = matrix_mult_h_C_compare_double;
+            }
+
+            bool success =
+                executeTask(task.c_str(), tpb, n, num_runs,
+                            h_C_compare_float_task, h_C_compare_double_task);
+            if (!success)
+              allSuccess = false;
+          }
+        }
+      } else {
+        printf("Error: Unknown platform in task '%s'\n", task.c_str());
+        printTaskUsage();
+        allSuccess = false;
+      }
     }
   }
 

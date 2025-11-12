@@ -160,15 +160,31 @@ void logResult(TaskType taskType, Platform platform, int threadsPerBlock,
   const char *platformStr = getPlatformString(platform);
   const char *sizeStr = sizeToBitwiseFormat(size);
 
-  if (platform == Platform::CPU) {
-    fprintf(cpuLogFile, "%s,%s,%s,%f\n", taskStr, platformStr, sizeStr,
-            duration);
-    fflush(cpuLogFile);
-  } else {
-    fprintf(gpuLogFile, "%s,%s,%d,%s,%f\n", taskStr, platformStr,
-            threadsPerBlock, sizeStr, duration);
-    fflush(gpuLogFile);
+  if (platform != Platform::GPU) {
+    printf("Error: This logResult overload is only for GPU platform.\n");
+    return;
   }
+  fprintf(gpuLogFile, "%s,%s,%d,%s,%f\n", taskStr, platformStr, threadsPerBlock,
+          sizeStr, duration);
+  fflush(gpuLogFile);
+}
+
+void logResult(TaskType taskType, Platform platform, int size, float duration) {
+  if (!loggerInitialized || (cpuLogFile == nullptr && gpuLogFile == nullptr)) {
+    printf("Warning: Logger not initialized. Call initLogger() first.\n");
+    return;
+  }
+
+  const char *taskStr = getTaskTypeString(taskType);
+  const char *platformStr = getPlatformString(platform);
+  const char *sizeStr = sizeToBitwiseFormat(size);
+
+  if (platform != Platform::CPU) {
+    printf("Error: This logResult overload is only for CPU platform.\n");
+    return;
+  }
+  fprintf(cpuLogFile, "%s,%s,%s,%f\n", taskStr, platformStr, sizeStr, duration);
+  fflush(cpuLogFile);
 }
 
 void closeLogger() {

@@ -8,7 +8,7 @@
 #include <ctime>
 #include <vector>
 
-float MatrixAddControllerCPU(std::vector<float> &h_C, int n) {
+float MatrixAddControllerCPUFloat(std::vector<float> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -36,7 +36,7 @@ float MatrixAddControllerCPU(std::vector<float> &h_C, int n) {
   return duration;
 }
 
-float MatrixAddControllerGPU(std::vector<float> &h_C, int TPB, int n) {
+float MatrixAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -88,7 +88,7 @@ float MatrixAddControllerGPU(std::vector<float> &h_C, int TPB, int n) {
   return duration;
 }
 
-float MatrixAddControllerCPU(std::vector<double> &h_C, int n) {
+float MatrixAddControllerCPUDouble(std::vector<double> &h_C, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;
@@ -117,7 +117,7 @@ float MatrixAddControllerCPU(std::vector<double> &h_C, int n) {
   return duration;
 }
 
-float MatrixAddControllerGPU(std::vector<double> &h_C, int TPB, int n) {
+float MatrixAddControllerGPUDouble(std::vector<double> &h_C, int TPB, int n) {
   const int M = n;
   const int N = n;
   const int numElements = M * N;

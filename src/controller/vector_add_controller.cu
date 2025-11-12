@@ -8,7 +8,7 @@
 #include <ctime>
 #include <vector>
 
-float VectorAddControllerCPU(std::vector<float> &h_C, int n) {
+float VectorAddControllerCPUFloat(std::vector<float> &h_C, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
@@ -33,7 +33,7 @@ float VectorAddControllerCPU(std::vector<float> &h_C, int n) {
   return duration;
 }
 
-float VectorAddControllerGPU(std::vector<float> &h_C, int TPB, int n) {
+float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
   const int N = n;
   float *h_A = new float[N];
   float *h_B = new float[N];
@@ -143,7 +143,7 @@ float VectorAddControllerGPU(std::vector<float> &h_C, int TPB, int n) {
   return duration;
 }
 
-float VectorAddControllerCPU(std::vector<double> &h_C, int n) {
+float VectorAddControllerCPUDouble(std::vector<double> &h_C, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];
@@ -168,7 +168,7 @@ float VectorAddControllerCPU(std::vector<double> &h_C, int n) {
   return duration;
 }
 
-float VectorAddControllerGPU(std::vector<double> &h_C, int TPB, int n) {
+float VectorAddControllerGPUDouble(std::vector<double> &h_C, int TPB, int n) {
   const int N = n;
   double *h_A = new double[N];
   double *h_B = new double[N];

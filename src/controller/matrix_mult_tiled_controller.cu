@@ -8,7 +8,8 @@
 #include <ctime>
 #include <vector>
 
-float MatrixMultTiledControllerGPU(std::vector<float> &h_C, int TPB, int n) {
+float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
+                                        int n) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -67,7 +68,8 @@ float MatrixMultTiledControllerGPU(std::vector<float> &h_C, int TPB, int n) {
   return duration;
 }
 
-float MatrixMultTiledControllerGPU(std::vector<double> &h_C, int TPB, int n) {
+float MatrixMultTiledControllerGPUDouble(std::vector<double> &h_C, int TPB,
+                                         int n) {
   const int M = n;
   const int N = n;
   const int K = n;

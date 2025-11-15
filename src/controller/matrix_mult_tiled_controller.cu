@@ -1,15 +1,14 @@
-#include "controller.h"
-#include "cpu.h"
-#include "kernels.h"
-#include "logger.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 
-float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
-                                        int n) {
+#include "controller.h"
+#include "cpu.h"
+#include "kernels.h"
+#include "logger.h"
+
+float MatrixMultTiledControllerGPUFloat(std::vector<float>& h_C, int TPB, int n, bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -17,8 +16,8 @@ float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  float *h_A = new float[numElementsA];
-  float *h_B = new float[numElementsB];
+  float* h_A = new float[numElementsA];
+  float* h_B = new float[numElementsB];
   h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
@@ -35,9 +34,9 @@ float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
 
   clock_t start = clock();
 
-  cudaMalloc((void **)&d_A, sizeA);
-  cudaMalloc((void **)&d_B, sizeB);
-  cudaMalloc((void **)&d_C, sizeC);
+  cudaMalloc((void**)&d_A, sizeA);
+  cudaMalloc((void**)&d_B, sizeB);
+  cudaMalloc((void**)&d_C, sizeC);
 
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
@@ -54,8 +53,8 @@ float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("GPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB,
+         M, N);
 
   logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, TPB * TPB, M, duration);
 
@@ -68,8 +67,7 @@ float MatrixMultTiledControllerGPUFloat(std::vector<float> &h_C, int TPB,
   return duration;
 }
 
-float MatrixMultTiledControllerGPUDouble(std::vector<double> &h_C, int TPB,
-                                         int n) {
+float MatrixMultTiledControllerGPUDouble(std::vector<double>& h_C, int TPB, int n, bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -77,8 +75,8 @@ float MatrixMultTiledControllerGPUDouble(std::vector<double> &h_C, int TPB,
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  double *h_A = new double[numElementsA];
-  double *h_B = new double[numElementsB];
+  double* h_A = new double[numElementsA];
+  double* h_B = new double[numElementsB];
   h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
@@ -95,9 +93,9 @@ float MatrixMultTiledControllerGPUDouble(std::vector<double> &h_C, int TPB,
 
   clock_t start = clock();
 
-  cudaMalloc((void **)&d_A, sizeA);
-  cudaMalloc((void **)&d_B, sizeB);
-  cudaMalloc((void **)&d_C, sizeC);
+  cudaMalloc((void**)&d_A, sizeA);
+  cudaMalloc((void**)&d_B, sizeB);
+  cudaMalloc((void**)&d_C, sizeC);
 
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
@@ -114,10 +112,12 @@ float MatrixMultTiledControllerGPUDouble(std::vector<double> &h_C, int TPB,
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Tiled Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("GPU Matrix Mult Tiled Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB,
+         M, N);
 
-  logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, TPB * TPB, M, duration);
+  if (isLogged) {
+    logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, TPB * TPB, M, duration);
+  }
 
   cudaFree(d_A);
   cudaFree(d_B);

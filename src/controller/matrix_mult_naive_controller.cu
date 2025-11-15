@@ -1,14 +1,14 @@
-#include "controller.h"
-#include "cpu.h"
-#include "kernels.h"
-#include "logger.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 
-float MatrixMultNaiveControllerCPUFloat(std::vector<float> &h_C, int n) {
+#include "controller.h"
+#include "cpu.h"
+#include "kernels.h"
+#include "logger.h"
+
+float MatrixMultNaiveControllerCPUFloat(std::vector<float>& h_C, int n, bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -16,8 +16,8 @@ float MatrixMultNaiveControllerCPUFloat(std::vector<float> &h_C, int n) {
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  float *h_A = new float[numElementsA];
-  float *h_B = new float[numElementsB];
+  float* h_A = new float[numElementsA];
+  float* h_B = new float[numElementsB];
   h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
@@ -32,18 +32,18 @@ float MatrixMultNaiveControllerCPUFloat(std::vector<float> &h_C, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Float Time: %f ms (Size: %d x %d)\n", duration,
-         M, N);
+  printf("CPU Matrix Mult Naive Float Time: %f ms (Size: %d x %d)\n", duration, M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+  if (isLogged) {
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+  }
 
   delete[] h_A;
   delete[] h_B;
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUFloat(std::vector<float> &h_C, int TPB,
-                                        int n) {
+float MatrixMultNaiveControllerGPUFloat(std::vector<float>& h_C, int TPB, int n, bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -51,8 +51,8 @@ float MatrixMultNaiveControllerGPUFloat(std::vector<float> &h_C, int TPB,
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  float *h_A = new float[numElementsA];
-  float *h_B = new float[numElementsB];
+  float* h_A = new float[numElementsA];
+  float* h_B = new float[numElementsB];
   h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
@@ -69,9 +69,9 @@ float MatrixMultNaiveControllerGPUFloat(std::vector<float> &h_C, int TPB,
 
   clock_t start = clock();
 
-  cudaMalloc((void **)&d_A, sizeA);
-  cudaMalloc((void **)&d_B, sizeB);
-  cudaMalloc((void **)&d_C, sizeC);
+  cudaMalloc((void**)&d_A, sizeA);
+  cudaMalloc((void**)&d_B, sizeB);
+  cudaMalloc((void**)&d_C, sizeC);
 
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
@@ -88,10 +88,12 @@ float MatrixMultNaiveControllerGPUFloat(std::vector<float> &h_C, int TPB,
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("GPU Matrix Mult Naive Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB,
+         M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+  if (isLogged) {
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+  }
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -102,7 +104,7 @@ float MatrixMultNaiveControllerGPUFloat(std::vector<float> &h_C, int TPB,
   return duration;
 }
 
-float MatrixMultNaiveControllerCPUDouble(std::vector<double> &h_C, int n) {
+float MatrixMultNaiveControllerCPUDouble(std::vector<double>& h_C, int n, bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -110,8 +112,8 @@ float MatrixMultNaiveControllerCPUDouble(std::vector<double> &h_C, int n) {
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  double *h_A = new double[numElementsA];
-  double *h_B = new double[numElementsB];
+  double* h_A = new double[numElementsA];
+  double* h_B = new double[numElementsB];
   h_C.resize(numElementsC);
 
   for (int i = 0; i < numElementsA; ++i) {
@@ -126,10 +128,11 @@ float MatrixMultNaiveControllerCPUDouble(std::vector<double> &h_C, int n) {
   clock_t end = clock();
 
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("CPU Matrix Mult Naive Double Time: %f ms (Size: %d x %d)\n", duration,
-         M, N);
+  printf("CPU Matrix Mult Naive Double Time: %f ms (Size: %d x %d)\n", duration, M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+  if (isLogged) {
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+  }
 
   // print result
   double result_sample = 0.0;
@@ -143,8 +146,8 @@ float MatrixMultNaiveControllerCPUDouble(std::vector<double> &h_C, int n) {
   return duration;
 }
 
-float MatrixMultNaiveControllerGPUDouble(std::vector<double> &result, int TPB,
-                                         int n) {
+float MatrixMultNaiveControllerGPUDouble(std::vector<double>& result, int TPB, int n,
+                                         bool isLogged) {
   const int M = n;
   const int N = n;
   const int K = n;
@@ -152,9 +155,9 @@ float MatrixMultNaiveControllerGPUDouble(std::vector<double> &result, int TPB,
   const int numElementsB = K * N;
   const int numElementsC = M * N;
 
-  double *h_A = new double[numElementsA];
-  double *h_B = new double[numElementsB];
-  double *h_C = new double[numElementsC];
+  double* h_A = new double[numElementsA];
+  double* h_B = new double[numElementsB];
+  double* h_C = new double[numElementsC];
 
   for (int i = 0; i < numElementsA; ++i) {
     h_A[i] = static_cast<double>(rand()) / RAND_MAX;
@@ -170,9 +173,9 @@ float MatrixMultNaiveControllerGPUDouble(std::vector<double> &result, int TPB,
 
   clock_t start = clock();
 
-  cudaMalloc((void **)&d_A, sizeA);
-  cudaMalloc((void **)&d_B, sizeB);
-  cudaMalloc((void **)&d_C, sizeC);
+  cudaMalloc((void**)&d_A, sizeA);
+  cudaMalloc((void**)&d_B, sizeB);
+  cudaMalloc((void**)&d_C, sizeC);
 
   cudaMemcpy(d_A, h_A, sizeA, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, sizeB, cudaMemcpyHostToDevice);
@@ -189,10 +192,12 @@ float MatrixMultNaiveControllerGPUDouble(std::vector<double> &result, int TPB,
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n",
-         duration, TPB * TPB, M, N);
+  printf("GPU Matrix Mult Naive Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB,
+         M, N);
 
-  logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+  if (isLogged) {
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+  }
 
   // print result
   double result_sample = 0.0;

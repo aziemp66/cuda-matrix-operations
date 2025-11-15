@@ -1,17 +1,17 @@
-#include "controller.h"
-#include "cpu.h"
-#include "kernels.h"
-#include "logger.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 
-float VectorAddControllerCPUFloat(std::vector<float> &h_C, int n) {
+#include "controller.h"
+#include "cpu.h"
+#include "kernels.h"
+#include "logger.h"
+
+float VectorAddControllerCPUFloat(std::vector<float>& h_C, int n, bool isLogged) {
   const int N = n;
-  float *h_A = new float[N];
-  float *h_B = new float[N];
+  float* h_A = new float[N];
+  float* h_B = new float[N];
   h_C.resize(N);
 
   for (int i = 0; i < N; ++i) {
@@ -26,17 +26,19 @@ float VectorAddControllerCPUFloat(std::vector<float> &h_C, int n) {
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Vector Add Float Time: %f ms (Size: %d)\n", duration, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+  if (isLogged) {
+    logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+  }
 
   delete[] h_A;
   delete[] h_B;
   return duration;
 }
 
-float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
+float VectorAddControllerGPUFloat(std::vector<float>& h_C, int TPB, int n, bool isLogged) {
   const int N = n;
-  float *h_A = new float[N];
-  float *h_B = new float[N];
+  float* h_A = new float[N];
+  float* h_B = new float[N];
   h_C.resize(N);
 
   for (int i = 0; i < N; ++i) {
@@ -50,7 +52,7 @@ float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
   clock_t start = clock();
 
   // Allocate GPU memory with error checking
-  cudaError_t err = cudaMalloc((void **)&d_A, size);
+  cudaError_t err = cudaMalloc((void**)&d_A, size);
   if (err != cudaSuccess) {
     printf("CUDA malloc failed for d_A: %s\n", cudaGetErrorString(err));
     delete[] h_A;
@@ -58,7 +60,7 @@ float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
     return -1.0f;
   }
 
-  err = cudaMalloc((void **)&d_B, size);
+  err = cudaMalloc((void**)&d_B, size);
   if (err != cudaSuccess) {
     printf("CUDA malloc failed for d_B: %s\n", cudaGetErrorString(err));
     cudaFree(d_A);
@@ -67,7 +69,7 @@ float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
     return -1.0f;
   }
 
-  err = cudaMalloc((void **)&d_C, size);
+  err = cudaMalloc((void**)&d_C, size);
   if (err != cudaSuccess) {
     printf("CUDA malloc failed for d_C: %s\n", cudaGetErrorString(err));
     cudaFree(d_A);
@@ -129,10 +131,11 @@ float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration,
-         TPB, N);
+  printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+  if (isLogged) {
+    logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+  }
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -143,10 +146,10 @@ float VectorAddControllerGPUFloat(std::vector<float> &h_C, int TPB, int n) {
   return duration;
 }
 
-float VectorAddControllerCPUDouble(std::vector<double> &h_C, int n) {
+float VectorAddControllerCPUDouble(std::vector<double>& h_C, int n, bool isLogged) {
   const int N = n;
-  double *h_A = new double[N];
-  double *h_B = new double[N];
+  double* h_A = new double[N];
+  double* h_B = new double[N];
   h_C.resize(N);
 
   for (int i = 0; i < N; ++i) {
@@ -161,17 +164,19 @@ float VectorAddControllerCPUDouble(std::vector<double> &h_C, int n) {
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
   printf("CPU Vector Add Double Time: %f ms (Size: %d)\n", duration, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+  if (isLogged) {
+    logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+  }
 
   delete[] h_A;
   delete[] h_B;
   return duration;
 }
 
-float VectorAddControllerGPUDouble(std::vector<double> &h_C, int TPB, int n) {
+float VectorAddControllerGPUDouble(std::vector<double>& h_C, int TPB, int n, bool isLogged) {
   const int N = n;
-  double *h_A = new double[N];
-  double *h_B = new double[N];
+  double* h_A = new double[N];
+  double* h_B = new double[N];
   h_C.resize(N);
 
   for (int i = 0; i < N; ++i) {
@@ -184,9 +189,9 @@ float VectorAddControllerGPUDouble(std::vector<double> &h_C, int TPB, int n) {
 
   clock_t start = clock();
 
-  cudaMalloc((void **)&d_A, size);
-  cudaMalloc((void **)&d_B, size);
-  cudaMalloc((void **)&d_C, size);
+  cudaMalloc((void**)&d_A, size);
+  cudaMalloc((void**)&d_B, size);
+  cudaMalloc((void**)&d_C, size);
 
   cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
@@ -202,10 +207,11 @@ float VectorAddControllerGPUDouble(std::vector<double> &h_C, int TPB, int n) {
 
   clock_t end = clock();
   float duration = 1000.0f * (float)(end - start) / CLOCKS_PER_SEC;
-  printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration,
-         TPB, N);
+  printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
-  logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+  if (isLogged) {
+    logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+  }
 
   cudaFree(d_A);
   cudaFree(d_B);

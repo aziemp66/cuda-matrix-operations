@@ -1,21 +1,20 @@
 #include "logger.h"
 
-#include <cmath>
 #include <cstdio>
 #include <cstring>
 
-static FILE *cpuLogFile = nullptr;
-static FILE *gpuLogFile = nullptr;
+static FILE* cpuLogFile = nullptr;
+static FILE* gpuLogFile = nullptr;
 static bool loggerInitialized = false;
 
-// Define the headers here
-const char *const CPU_EXPECTED_HEADER = "task_type,platform,size,duration_ms";
-const char *const GPU_EXPECTED_HEADER =
-    "task_type,platform,threads_per_block,size,duration_ms";
+// Define the headers here, now with 'datatype'
+const char* const CPU_EXPECTED_HEADER = "task_type,platform,datatype,size,duration_ms";
+const char* const GPU_EXPECTED_HEADER =
+    "task_type,platform,datatype,threads_per_block,size,duration_ms";
 
-// Validate CSV header if file exists (optimized - single file open)
-static bool validateHeader(const char *filename, const char *expectedHeader) {
-  FILE *testFile = fopen(filename, "r");
+// Validate CSV header if file exists
+static bool validateHeader(const char* filename, const char* expectedHeader) {
+  FILE* testFile = fopen(filename, "r");
   if (testFile == nullptr) {
     // File doesn't exist, which is fine (will create new)
     return true;
@@ -28,7 +27,6 @@ static bool validateHeader(const char *filename, const char *expectedHeader) {
     isEmpty = true;
   }
 
-  // Don't close yet - we'll reuse the file handle if valid
   if (!isEmpty) {
     // Remove newline if present
     size_t len = strlen(header);
@@ -51,7 +49,7 @@ static bool validateHeader(const char *filename, const char *expectedHeader) {
   return true;
 }
 
-bool initLogger(const char *cpuFilename, const char *gpuFilename) {
+bool initLogger(const char* cpuFilename, const char* gpuFilename) {
   if (loggerInitialized) {
     closeLogger();
   }
@@ -95,36 +93,47 @@ bool initLogger(const char *cpuFilename, const char *gpuFilename) {
   return true;
 }
 
-const char *getTaskTypeString(TaskType taskType) {
+// --- Helper Functions to get strings from enums ---
+
+const char* getTaskTypeString(TaskType taskType) {
   switch (taskType) {
-  case TaskType::VECTOR_ADD:
-    return "vector_add";
-  case TaskType::MATRIX_ADD:
-    return "matrix_add";
-  case TaskType::MATRIX_MULT_NAIVE:
-    return "matrixMultNaive";
-  case TaskType::MATRIX_MULT_TILED:
-    return "MatrixMultTiled";
-  default:
-    return "unknown";
+    case TaskType::VECTOR_ADD:
+      return "vector_add";
+    case TaskType::MATRIX_ADD:
+      return "matrix_add";
+    case TaskType::MATRIX_MULT_NAIVE:
+      return "matrixMultNaive";
+    case TaskType::MATRIX_MULT_TILED:
+      return "MatrixMultTiled";
+    default:
+      return "unknown";
   }
 }
 
-const char *getPlatformString(Platform platform) {
+const char* getPlatformString(Platform platform) {
   switch (platform) {
-  case Platform::CPU:
-    return "CPU";
-  case Platform::GPU:
-    return "GPU";
-  default:
-    return "unknown";
+    case Platform::CPU:
+      return "CPU";
+    case Platform::GPU:
+      return "GPU";
+    default:
+      return "unknown";
   }
 }
 
-const char *sizeToBitwiseFormat(int size) {
-  // Find the bitwise representation (e.g., 1024 = 1 << 10)
-  // We'll find the exponent such that 2^exponent = size
-  static char buffer[64];
+const char* getDataTypeString(DataType dtype) {
+  switch (dtype) {
+    case DataType::FLOAT:
+      return "float";
+    case DataType::DOUBLE:
+      return "double";
+    default:
+      return "unknown";
+  }
+}
+
+const char* sizeToBitwiseFormat(int size) {
+  static char buffer[64];  // Static buffer to return a stable pointer
 
   if (size <= 0) {
     snprintf(buffer, sizeof(buffer), "%d", size);
@@ -149,41 +158,49 @@ const char *sizeToBitwiseFormat(int size) {
   return buffer;
 }
 
-void logResult(TaskType taskType, Platform platform, int threadsPerBlock,
-               int size, float duration) {
-  if (!loggerInitialized || (cpuLogFile == nullptr && gpuLogFile == nullptr)) {
-    printf("Warning: Logger not initialized. Call initLogger() first.\n");
+// --- Updated logResult Functions ---
+
+// GPU overload
+void logResult(TaskType taskType, Platform platform, DataType dtype, int threadsPerBlock, int size,
+               float duration) {
+  if (!loggerInitialized || gpuLogFile == nullptr) {
+    printf("Warning: Logger not initialized or GPU file handle is null.\n");
     return;
   }
-
-  const char *taskStr = getTaskTypeString(taskType);
-  const char *platformStr = getPlatformString(platform);
-  const char *sizeStr = sizeToBitwiseFormat(size);
 
   if (platform != Platform::GPU) {
     printf("Error: This logResult overload is only for GPU platform.\n");
     return;
   }
-  fprintf(gpuLogFile, "%s,%s,%d,%s,%f\n", taskStr, platformStr, threadsPerBlock,
+
+  const char* taskStr = getTaskTypeString(taskType);
+  const char* platformStr = getPlatformString(platform);
+  const char* dtypeStr = getDataTypeString(dtype);
+  const char* sizeStr = sizeToBitwiseFormat(size);
+
+  fprintf(gpuLogFile, "%s,%s,%s,%d,%s,%f\n", taskStr, platformStr, dtypeStr, threadsPerBlock,
           sizeStr, duration);
   fflush(gpuLogFile);
 }
 
-void logResult(TaskType taskType, Platform platform, int size, float duration) {
-  if (!loggerInitialized || (cpuLogFile == nullptr && gpuLogFile == nullptr)) {
-    printf("Warning: Logger not initialized. Call initLogger() first.\n");
+// CPU overload
+void logResult(TaskType taskType, Platform platform, DataType dtype, int size, float duration) {
+  if (!loggerInitialized || cpuLogFile == nullptr) {
+    printf("Warning: Logger not initialized or CPU file handle is null.\n");
     return;
   }
-
-  const char *taskStr = getTaskTypeString(taskType);
-  const char *platformStr = getPlatformString(platform);
-  const char *sizeStr = sizeToBitwiseFormat(size);
 
   if (platform != Platform::CPU) {
     printf("Error: This logResult overload is only for CPU platform.\n");
     return;
   }
-  fprintf(cpuLogFile, "%s,%s,%s,%f\n", taskStr, platformStr, sizeStr, duration);
+
+  const char* taskStr = getTaskTypeString(taskType);
+  const char* platformStr = getPlatformString(platform);
+  const char* dtypeStr = getDataTypeString(dtype);
+  const char* sizeStr = sizeToBitwiseFormat(size);
+
+  fprintf(cpuLogFile, "%s,%s,%s,%s,%f\n", taskStr, platformStr, dtypeStr, sizeStr, duration);
   fflush(cpuLogFile);
 }
 

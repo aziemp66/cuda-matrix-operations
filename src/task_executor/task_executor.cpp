@@ -201,16 +201,6 @@ bool executeTasks(const std::vector<std::string>& tasks, const std::vector<int> 
   std::vector<double> matrix_add_h_C_compare_double;
   std::vector<double> matrix_mult_h_C_compare_double;
 
-  // Generate reference results
-  int max_n = 1 << n_exp_end;
-  VectorAddControllerCPUFloat(vector_add_h_C_compare_float, max_n, false);
-  MatrixAddControllerCPUFloat(matrix_add_h_C_compare_float, max_n, false);
-  MatrixMultNaiveControllerCPUFloat(matrix_mult_h_C_compare_float, max_n, false);
-
-  VectorAddControllerCPUDouble(vector_add_h_C_compare_double, max_n, false);
-  MatrixAddControllerCPUDouble(matrix_add_h_C_compare_double, max_n, false);
-  MatrixMultNaiveControllerCPUDouble(matrix_mult_h_C_compare_double, max_n, false);
-
   // --- FIX 3: Declared as persistent, empty objects, not references ---
   static const std::vector<float> empty_float;
   static const std::vector<double> empty_double;
@@ -218,6 +208,16 @@ bool executeTasks(const std::vector<std::string>& tasks, const std::vector<int> 
   for (int i = n_exp_start; i <= n_exp_end; i++) {
     int n = 1 << i;
     printf("=== Executing tasks for size %d ===\n", n);
+
+    // Generate reference results
+    // int max_n = 1 << n;
+    // VectorAddControllerCPUFloat(vector_add_h_C_compare_float, max_n, false);
+    // MatrixAddControllerCPUFloat(matrix_add_h_C_compare_float, max_n, false);
+    // MatrixMultNaiveControllerCPUFloat(matrix_mult_h_C_compare_float, max_n, false);
+
+    // VectorAddControllerCPUDouble(vector_add_h_C_compare_double, max_n, false);
+    // MatrixAddControllerCPUDouble(matrix_add_h_C_compare_double, max_n, false);
+    // MatrixMultNaiveControllerCPUDouble(matrix_mult_h_C_compare_double, max_n, false);
 
     for (const auto& task : tasks) {
       std::string s = task;

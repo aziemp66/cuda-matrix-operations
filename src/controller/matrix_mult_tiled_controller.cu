@@ -56,7 +56,7 @@ float MatrixMultTiledControllerGPUFloat(std::vector<float>& h_C, int TPB, int n,
   printf("GPU Matrix Mult Tiled Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB,
          M, N);
 
-  logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, TPB * TPB, M, duration);
+  logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, DataType::FLOAT, TPB * TPB, M, duration);
 
   cudaFree(d_A);
   cudaFree(d_B);
@@ -116,7 +116,7 @@ float MatrixMultTiledControllerGPUDouble(std::vector<double>& h_C, int TPB, int 
          M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, TPB * TPB, M, duration);
+    logResult(TaskType::MATRIX_MULT_TILED, Platform::GPU, DataType::DOUBLE, TPB * TPB, M, duration);
   }
 
   cudaFree(d_A);

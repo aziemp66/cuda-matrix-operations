@@ -35,7 +35,7 @@ float MatrixMultNaiveControllerCPUFloat(std::vector<float>& h_C, int n, bool isL
   printf("CPU Matrix Mult Naive Float Time: %f ms (Size: %d x %d)\n", duration, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, DataType::FLOAT, M, duration);
   }
 
   delete[] h_A;
@@ -92,7 +92,7 @@ float MatrixMultNaiveControllerGPUFloat(std::vector<float>& h_C, int TPB, int n,
          M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, DataType::FLOAT, TPB * TPB, M, duration);
   }
 
   cudaFree(d_A);
@@ -131,7 +131,7 @@ float MatrixMultNaiveControllerCPUDouble(std::vector<double>& h_C, int n, bool i
   printf("CPU Matrix Mult Naive Double Time: %f ms (Size: %d x %d)\n", duration, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, M, duration);
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::CPU, DataType::DOUBLE, M, duration);
   }
 
   // print result
@@ -196,7 +196,7 @@ float MatrixMultNaiveControllerGPUDouble(std::vector<double>& result, int TPB, i
          M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, TPB * TPB, M, duration);
+    logResult(TaskType::MATRIX_MULT_NAIVE, Platform::GPU, DataType::DOUBLE, TPB * TPB, M, duration);
   }
 
   // print result

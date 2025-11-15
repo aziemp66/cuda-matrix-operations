@@ -30,7 +30,7 @@ float MatrixAddControllerCPUFloat(std::vector<float>& h_C, int n, bool isLogged)
   printf("CPU Matrix Add Float Time: %f ms (Size: %d x %d)\n", duration, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_ADD, Platform::CPU, M, duration);
+    logResult(TaskType::MATRIX_ADD, Platform::CPU, DataType::FLOAT, M, duration);
   }
 
   delete[] h_A;
@@ -79,7 +79,7 @@ float MatrixAddControllerGPUFloat(std::vector<float>& h_C, int TPB, int n, bool 
   printf("GPU Matrix Add Float Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_ADD, Platform::GPU, TPB * TPB, M, duration);
+    logResult(TaskType::MATRIX_ADD, Platform::GPU, DataType::FLOAT, TPB * TPB, M, duration);
   }
 
   cudaFree(d_A);
@@ -113,7 +113,7 @@ float MatrixAddControllerCPUDouble(std::vector<double>& h_C, int n, bool isLogge
   printf("CPU Matrix Add Double Time: %f ms ( Size: %d x %d)\n", duration, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_ADD, Platform::CPU, M, duration);
+    logResult(TaskType::MATRIX_ADD, Platform::CPU, DataType::DOUBLE, M, duration);
   }
 
   delete[] h_A;
@@ -162,7 +162,7 @@ float MatrixAddControllerGPUDouble(std::vector<double>& h_C, int TPB, int n, boo
   printf("GPU Matrix Add Double Time: %f ms (TPB: %d, Size: %d x %d)\n", duration, TPB * TPB, M, N);
 
   if (isLogged) {
-    logResult(TaskType::MATRIX_ADD, Platform::GPU, TPB * TPB, M, duration);
+    logResult(TaskType::MATRIX_ADD, Platform::GPU, DataType::DOUBLE, TPB * TPB, M, duration);
   }
 
   cudaFree(d_A);

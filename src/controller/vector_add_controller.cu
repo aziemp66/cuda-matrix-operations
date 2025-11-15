@@ -27,7 +27,7 @@ float VectorAddControllerCPUFloat(std::vector<float>& h_C, int n, bool isLogged)
   printf("CPU Vector Add Float Time: %f ms (Size: %d)\n", duration, N);
 
   if (isLogged) {
-    logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+    logResult(TaskType::VECTOR_ADD, Platform::CPU, DataType::FLOAT, N, duration);
   }
 
   delete[] h_A;
@@ -134,7 +134,7 @@ float VectorAddControllerGPUFloat(std::vector<float>& h_C, int TPB, int n, bool 
   printf("GPU Vector Add Float Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   if (isLogged) {
-    logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+    logResult(TaskType::VECTOR_ADD, Platform::GPU, DataType::FLOAT, TPB, N, duration);
   }
 
   cudaFree(d_A);
@@ -165,7 +165,7 @@ float VectorAddControllerCPUDouble(std::vector<double>& h_C, int n, bool isLogge
   printf("CPU Vector Add Double Time: %f ms (Size: %d)\n", duration, N);
 
   if (isLogged) {
-    logResult(TaskType::VECTOR_ADD, Platform::CPU, N, duration);
+    logResult(TaskType::VECTOR_ADD, Platform::CPU, DataType::DOUBLE, N, duration);
   }
 
   delete[] h_A;
@@ -210,7 +210,7 @@ float VectorAddControllerGPUDouble(std::vector<double>& h_C, int TPB, int n, boo
   printf("GPU Vector Add Double Time: %f ms (TPB: %d, Size: %d)\n", duration, TPB, N);
 
   if (isLogged) {
-    logResult(TaskType::VECTOR_ADD, Platform::GPU, TPB, N, duration);
+    logResult(TaskType::VECTOR_ADD, Platform::GPU, DataType::DOUBLE, TPB, N, duration);
   }
 
   cudaFree(d_A);
